@@ -55,7 +55,7 @@ Guardian::Guardian(const std::string& policy_file_path,
             std::string("Guardian: failed to parse policy file — ") + e.what());
     }
 
-    Logger::instance().log(LogLevel::INFO, "Guardian",
+    Logger::instance().info("Guardian",
         "Loaded policy graph: " + std::to_string(policy_graph_.node_count()) +
         " nodes, " + std::to_string(policy_graph_.edge_count()) + " edges");
 
@@ -81,7 +81,7 @@ Guardian::Guardian(const std::string& policy_file_path,
     //     }
     // }
 
-    Logger::instance().log(LogLevel::INFO, "Guardian",
+    Logger::instance().info("Guardian",
         "Initialization complete (sandbox pending Dev B merge)");
     initialized_ = true;
 }
@@ -116,10 +116,11 @@ Guardian::execute_tool(const std::string& tool_name,
     // Step 2: Validate using PolicyValidator
     ValidationResult validation = validator_->validate(tool_name, sequence);
 
-    Logger::instance().log(
+    Logger::instance().log_with_context(
         validation.approved ? LogLevel::INFO : LogLevel::WARN,
         "Guardian",
-        "validate(" + tool_name + "): " + validation.reason);
+        "validate(" + tool_name + "): " + validation.reason,
+        tool_name, session_id);
 
     if (!validation.approved) {
         return {validation, std::nullopt};
@@ -168,7 +169,7 @@ std::string Guardian::create_session() {
         throw std::runtime_error("Guardian::create_session: not initialized");
     }
     auto id = session_mgr_->create_session();
-    Logger::instance().log(LogLevel::INFO, "Guardian", "Session created: " + id);
+    Logger::instance().info("Guardian", "Session created: " + id);
     return id;
 }
 
@@ -177,7 +178,7 @@ void Guardian::end_session(const std::string& session_id) {
         throw std::runtime_error("Guardian::end_session: not initialized");
     }
     session_mgr_->end_session(session_id);
-    Logger::instance().log(LogLevel::INFO, "Guardian", "Session ended: " + session_id);
+    Logger::instance().info("Guardian", "Session ended: " + session_id);
 }
 
 // ============================================================================
@@ -191,7 +192,7 @@ void Guardian::load_tool_module(const std::string& tool_name,
     }
     // TODO: enable after Dev B merge
     // sandbox_mgr_->load_module(tool_name, wasm_path);
-    Logger::instance().log(LogLevel::INFO, "Guardian",
+    Logger::instance().info("Guardian",
         "load_tool_module('" + tool_name + "', '" + wasm_path + "') — sandbox pending");
 }
 
@@ -207,8 +208,9 @@ void Guardian::set_default_sandbox_config(const SandboxConfig& config) {
 
 std::string Guardian::visualize_policy(const std::string& format) const {
     VisualizationOptions opts;
-    if (format == "json") {
-        opts.output_format = VisualizationOptions::JSON;
+    // DOT is the default; ASCII for terminal; SVG/PNG need Graphviz
+    if (format == "ascii") {
+        opts.output_format = VisualizationOptions::ASCII;
     } else {
         opts.output_format = VisualizationOptions::DOT;
     }
@@ -223,10 +225,10 @@ std::string Guardian::visualize_session(const std::string& session_id,
     }
     auto sequence = session_mgr_->get_sequence(session_id);
     VisualizationOptions opts;
-    if (format == "json") {
-        opts.output_format = VisualizationOptions::JSON;
+    if (format == "ascii") {
+        opts.output_format = VisualizationOptions::ASCII;
     }
-    return viz_->render_sequence(policy_graph_, sequence, {}, opts);
+    return viz_->render_sequence(policy_graph_, sequence, opts);
 }
 
 // ============================================================================
