@@ -40,10 +40,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nlohmann_json)
 
 # WasmEdge SDK (optional — Linux only for now)
-find_package(WasmEdge 0.14.0 QUIET)
+# The install.sh script doesn't reliably create CMake config files. Look for it directly.
+find_path(WasmEdge_INCLUDE_DIRS wasmedge/wasmedge.h PATHS "$ENV{HOME}/.wasmedge/include" "/usr/local/include" "/usr/include")
+find_library(WasmEdge_LIBRARIES wasmedge PATHS "$ENV{HOME}/.wasmedge/lib" "/usr/local/lib" "/usr/lib")
+
+if(WasmEdge_INCLUDE_DIRS AND WasmEdge_LIBRARIES)
+    set(WasmEdge_FOUND TRUE)
+endif()
 if(WasmEdge_FOUND)
-    message(STATUS "WasmEdge found: ${WasmEdge_VERSION}")
+    message(STATUS "WasmEdge found natively")
     add_compile_definitions(HAVE_WASMEDGE)
+    # Give all targets access to the definition
+    add_definitions(-DHAVE_WASMEDGE)
 else()
     message(STATUS "WasmEdge NOT found — sandbox will use MockRuntime only")
 endif()
@@ -164,18 +172,16 @@ if(GUARDIAN_BUILD_TESTS)
     target_link_libraries(test_wasmedge PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME test_wasmedge COMMAND test_wasmedge)
 
-<<<<<<< HEAD
     # Dev D: Performance Benchmarks
     add_executable(bench_visualization tests/performance/bench_visualization.cpp)
     target_link_libraries(bench_visualization PRIVATE guardian Catch2::Catch2WithMain)
     # Benchmarks are typically run manually or with specific flags, but we can add as a test too
     add_test(NAME bench_visualization COMMAND bench_visualization)
-=======
+
     # Dev B: Sandbox performance benchmarks
     add_executable(bench_sandbox tests/performance/bench_sandbox.cpp)
     target_link_libraries(bench_sandbox PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME bench_sandbox COMMAND bench_sandbox)
->>>>>>> 89aa7fe (test(perf): add sandbox performance benchmarks and finalize validation)
 endif()
 
 # ============================================================================

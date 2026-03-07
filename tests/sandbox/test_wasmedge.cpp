@@ -15,7 +15,7 @@ using namespace guardian;
 // Helper: paths to test .wasm modules (built by wasm_tools/build.sh)
 // ============================================================================
 
-static const std::string WASM_TOOLS_DIR = "wasm_tools";
+static const std::string WASM_TOOLS_DIR = "../wasm_tools";
 static const std::string SEARCH_DB_WASM = "search_database.wasm";
 static const std::string MEMORY_HOG_WASM = "memory_hog.wasm";
 static const std::string INFINITE_LOOP_WASM = "infinite_loop_tool.wasm";

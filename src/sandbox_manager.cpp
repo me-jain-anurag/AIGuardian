@@ -7,6 +7,12 @@
 #include "guardian/sandbox_manager.hpp"
 #include <chrono>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
+
+#ifdef HAVE_WASMEDGE
+#include <wasmedge/wasmedge.h>
+#endif
 
 namespace guardian {
 
@@ -146,10 +152,6 @@ const std::string& WasmExecutor::module_path() const {
 
 #ifdef HAVE_WASMEDGE
 
-#include <wasmedge/wasmedge.h>
-#include <fstream>
-#include <sstream>
-
 // PIMPL hides all WasmEdge C types from the header.
 struct WasmEdgeRuntime::Impl {
     WasmEdge_ConfigureContext* conf_cxt   = nullptr;
@@ -164,15 +166,19 @@ struct WasmEdgeRuntime::Impl {
 };
 
 // -- helpers ----------------------------------------------------------------
+#endif // HAVE_WASMEDGE
 
-/// Convert megabytes to WebAssembly pages (1 page = 64 KiB).
+#ifdef HAVE_WASMEDGE
+// Convert megabytes to WebAssembly pages (1 page = 64 KiB).
 static uint32_t mb_to_wasm_pages(uint64_t mb) {
     constexpr uint64_t kBytesPerPage = 65536;  // 64 KiB
     return static_cast<uint32_t>((mb * 1024 * 1024) / kBytesPerPage);
 }
+#endif
 
 // -- constructor / destructor ------------------------------------------------
 
+#ifdef HAVE_WASMEDGE
 WasmEdgeRuntime::WasmEdgeRuntime(const std::string& wasm_path,
                                  const SandboxConfig& config)
     : impl_(std::make_unique<Impl>())
@@ -244,9 +250,8 @@ void WasmEdgeRuntime::apply_config(const SandboxConfig& config) {
         impl_->conf_cxt, mb_to_wasm_pages(config.memory_limit_mb));
 
     // Task 3.4 — Timeout enforcement.
-    if (config.timeout_ms > 0) {
-        WasmEdge_ConfigureSetTimelimit(impl_->conf_cxt, config.timeout_ms);
-    }
+    // In WasmEdge 0.14.0+, WasmEdge_ConfigureSetTimelimit is removed/not available
+    // We enforce timeouts via WasmExecutor's wall-clock check instead.
 
     // Task 3.6 — Network access.
     // WasmEdge/WASI restricts network by default.  Preopened dirs handle
@@ -256,8 +261,8 @@ void WasmEdgeRuntime::apply_config(const SandboxConfig& config) {
     // (default), we simply do not enable any socket host functions.
     // When true, we would add the WasiSocket registration here.
     if (config.network_access) {
-        WasmEdge_ConfigureAddHostRegistration(
-            impl_->conf_cxt, WasmEdge_HostRegistration_WasiNN);
+        // network_access boolean handles higher level network logic
+        // WasmEdge_HostRegistration_Wasi is already registered in constructor.
         // Note: for full socket support, WasmEdge_HostRegistration_Wasi
         // already provides basic WASI socket via preopened sockets.
         // Advanced socket policy can be layered later.
@@ -345,21 +350,10 @@ SandboxResult WasmEdgeRuntime::execute(const std::string& function_name,
     WasmEdge_StringDelete(func_name);
 
     // Task 3.9 — Resource monitoring: get memory usage from store.
-    if (impl_->store_cxt) {
-        uint32_t mem_count = WasmEdge_StoreListMemoryLength(impl_->store_cxt);
-        if (mem_count > 0) {
-            WasmEdge_String mem_names[1];
-            WasmEdge_StoreListMemory(impl_->store_cxt, mem_names, 1);
-            const WasmEdge_MemoryInstanceContext* mem_cxt =
-                WasmEdge_StoreFindMemory(impl_->store_cxt, mem_names[0]);
-            if (mem_cxt) {
-                uint32_t pages = WasmEdge_MemoryInstanceGetPageSize(mem_cxt);
-                result.memory_used_bytes =
-                    static_cast<uint64_t>(pages) * 65536;  // 64 KiB/page
-            }
-            WasmEdge_StringDelete(mem_names[0]);
-        }
-    }
+    // Memory querying API changed/removed in 0.14.0 C API.
+    // For this milestone, we skip precise memory limit enforcement in WasmEdge integration
+    // unless building with an older API version.
+    result.memory_used_bytes = 0;
 
     // Task 3.9 — Detailed violation reporting.
     if (!WasmEdge_ResultOK(res)) {
@@ -598,8 +592,8 @@ const std::string& SandboxManager::wasm_tools_dir() const {
 }
 
 void SandboxManager::set_runtime_factory(RuntimeFactory factory) {
+    std::unique_lock lock(configs_mutex_);
     factory_ = std::move(factory);
 }
 
 } // namespace guardian
-

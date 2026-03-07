@@ -29,7 +29,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
     };
 
     SECTION("Overhead and Execution") {
-        SandboxManager mgr("wasm_tools", mock_factory);
+        SandboxManager mgr("../wasm_tools", mock_factory);
         mgr.load_module("dummy_tool", "dummy.wasm");
 
         BENCHMARK("Execute cached MockRuntime module (Overhead)") {
@@ -40,7 +40,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
     SECTION("Module Loading and Caching") {
         BENCHMARK_ADVANCED("Load module (MockRuntime creation)")
         (Catch::Benchmark::Chronometer meter) {
-            SandboxManager mgr("wasm_tools", mock_factory);
+            SandboxManager mgr("../wasm_tools", mock_factory);
             meter.measure([&] {
                 mgr.load_module("dyn_tool", "dyn.wasm");
                 mgr.unload_module("dyn_tool");
@@ -49,7 +49,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
         
         BENCHMARK_ADVANCED("Check if module is loaded (has_module)")
         (Catch::Benchmark::Chronometer meter) {
-            SandboxManager mgr("wasm_tools", mock_factory);
+            SandboxManager mgr("../wasm_tools", mock_factory);
             mgr.load_module("test_tool", "test.wasm");
             meter.measure([&] {
                 return mgr.has_module("test_tool");
@@ -58,7 +58,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
     }
 
     SECTION("Sustained Load (10,000 executions)") {
-        SandboxManager mgr("wasm_tools", mock_factory);
+        SandboxManager mgr("../wasm_tools", mock_factory);
         mgr.load_module("stress_tool", "stress.wasm");
         SandboxConfig cfg = SandboxConfig::safe_defaults();
 
@@ -85,7 +85,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
             return std::make_unique<WasmEdgeRuntime>(path, cfg);
         };
         
-        SandboxManager wasm_mgr("wasm_tools", wasm_factory);
+        SandboxManager wasm_mgr("../wasm_tools", wasm_factory);
         
         BENCHMARK_ADVANCED("Load real .wasm file (read_accounts.wasm)")
         (Catch::Benchmark::Chronometer meter) {
@@ -97,7 +97,7 @@ TEST_CASE("SandboxManager Performance Benchmarks", "[benchmark][sandbox]") {
         
         wasm_mgr.load_module("encrypt", "encrypt.wasm");
         BENCHMARK("Execute cached real .wasm file (encrypt.wasm overhead)") {
-            return wasm_mgr.execute_tool("encrypt", r"({"data":"1234567890"})");
+            return wasm_mgr.execute_tool("encrypt", R"({"data":"1234567890"})");
         };
     }
 #endif
