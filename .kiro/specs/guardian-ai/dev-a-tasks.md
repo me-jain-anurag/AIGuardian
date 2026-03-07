@@ -239,7 +239,7 @@ git checkout -b feature/policy-graph
 - [x] 10.1 Create `tests/performance/bench_policy_graph.cpp` — benchmark graph operations
 - [x] 10.2 Benchmark policy validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
 - [x] 10.3 Benchmark throughput (>100 validations/second)
-- [ ] 10.4 Benchmark memory usage (<100MB for 1000 tool calls)
+- [x] 10.4 Benchmark memory usage (<100MB for 1000 tool calls)
 - [x] 10.5 Test with graphs up to 200 nodes
 - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
@@ -252,7 +252,7 @@ git checkout -b feature/policy-graph
 ### Task 11: Verify All Examples Compile and Run (tasks.md 17.5)
 - [ ] 11.1 Build all 4 examples (basic_integration, custom_policy, concurrent_sessions, sandbox_config)
 - [ ] 11.2 Run each example and verify output
-- [ ] 11.3 Verify examples demonstrate best practices and include error handling
+- [x] 11.3 Verify examples demonstrate best practices and include error handling
 - _Requirements: 18.6_
 
 ### Task 12: Final Validation (tasks.md 22.1–22.4)

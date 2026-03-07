@@ -215,8 +215,17 @@ if(GUARDIAN_BUILD_TESTS)
 endif()
 
 # ============================================================================
-# Sandbox Configuration Demo (Dev B — Task 10)
+# Examples (Dev A & Dev B)
 # ============================================================================
+add_executable(basic_integration examples/basic_integration.cpp)
+target_link_libraries(basic_integration PRIVATE guardian)
+
+add_executable(custom_policy examples/custom_policy.cpp)
+target_link_libraries(custom_policy PRIVATE guardian)
+
+add_executable(concurrent_sessions examples/concurrent_sessions.cpp)
+target_link_libraries(concurrent_sessions PRIVATE guardian)
+
 add_executable(sandbox_config_demo examples/sandbox_config.cpp)
 target_link_libraries(sandbox_config_demo PRIVATE guardian)
 
