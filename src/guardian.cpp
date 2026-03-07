@@ -6,7 +6,7 @@
 #include "guardian/config.hpp"
 #include "guardian/session_manager.hpp"
 #include "guardian/policy_validator.hpp"
-// #include "guardian/sandbox_manager.hpp"  // TODO: enable after Dev B's WasmEdge integration
+#include "guardian/sandbox_manager.hpp"
 #include "guardian/visualization.hpp"
 #include "guardian/logger.hpp"
 
@@ -69,20 +69,19 @@ Guardian::Guardian(const std::string& policy_file_path,
     // 5. Initialize VisualizationEngine
     viz_ = std::make_unique<VisualizationEngine>();
 
-    // 6. Initialize SandboxManager (after Dev B merge)
-    // sandbox_mgr_ = std::make_unique<SandboxManager>();
-    // if (!wasm_tools_dir.empty()) {
-    //     // Scan and load wasm modules from directory
-    //     for (const auto& entry : fs::directory_iterator(wasm_tools_dir)) {
-    //         if (entry.path().extension() == ".wasm") {
-    //             sandbox_mgr_->load_module(
-    //                 entry.path().stem().string(), entry.path().string());
-    //         }
-    //     }
-    // }
+    // 6. Initialize SandboxManager
+    sandbox_mgr_ = std::make_unique<SandboxManager>(wasm_tools_dir);
+    if (!wasm_tools_dir.empty()) {
+        // Scan and load wasm modules from directory
+        for (const auto& entry : fs::directory_iterator(wasm_tools_dir)) {
+            if (entry.path().extension() == ".wasm") {
+                sandbox_mgr_->load_module(
+                    entry.path().stem().string(), entry.path().string());
+            }
+        }
+    }
 
-    Logger().info("Guardian",
-        "Initialization complete (sandbox pending Dev B merge)");
+    Logger::instance().info("Guardian", "Initialization complete");
     initialized_ = true;
 }
 
@@ -126,14 +125,14 @@ Guardian::execute_tool(const std::string& tool_name,
         return {validation, std::nullopt};
     }
 
-    // Step 3: Execute in sandbox (once Dev B's SandboxManager is linked)
+    // Step 3: Execute in sandbox
     std::optional<SandboxResult> sandbox_result = std::nullopt;
-    // auto node = policy_graph_.get_node(tool_name);
-    // if (node && sandbox_mgr_) {
-    //     nlohmann::json params_json(params);
-    //     sandbox_result = sandbox_mgr_->execute_tool(
-    //         tool_name, params_json.dump(), node->sandbox_config);
-    // }
+    auto node = policy_graph_.get_node_by_tool_name(tool_name);
+    if (node && sandbox_mgr_) {
+        nlohmann::json params_json(params);
+        sandbox_result = sandbox_mgr_->execute_tool(
+            tool_name, params_json.dump(), node->sandbox_config);
+    }
 
     // Step 4: Append to session on success
     ToolCall call;
@@ -239,11 +238,11 @@ void Guardian::update_config(const Config& config) {
     if (validator_) {
         validator_->set_cycle_threshold(config.cycle_detection.default_threshold);
     }
-    // TODO: (Dev B coordination) 
-    // if (sandbox_mgr_) {
-    //     sandbox_mgr_->enable_module_caching(config.performance.wasm_module_caching, 
-    //                                         config.performance.wasm_cache_size);
-    // }
+    if (sandbox_mgr_) {
+        // Dev B didn't actually implement enable_module_caching inside SandboxManager in their PR
+        // But we update their default configs
+        sandbox_mgr_->set_default_config(config.sandbox);
+    }
 }
 
 Config Guardian::get_config() const {

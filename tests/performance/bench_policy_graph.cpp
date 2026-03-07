@@ -6,6 +6,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include "guardian/policy_graph.hpp"
+#include "guardian/sandbox_manager.hpp"
 
 #include <string>
 #include <random>
@@ -207,21 +208,32 @@ TEST_CASE("Benchmark: LRUCache put/get (1000 ops)", "[benchmark][perf]") {
 
 TEST_CASE("Benchmark: Memory usage proxy (1000 validations)", "[benchmark][perf]") {
     // 10.4 Benchmark memory usage (<100MB for 1000 tool calls)
-    // Run under valgrind/massif to verify the 100MB limit.
-    auto graph = make_graph(200);
-    
-    // We can't directly use PolicyValidator as it's in another module,
-    // but we can benchmark the graph operations heavily.
-    BENCHMARK("Graph traversal for 1000 simulated calls") {
-        size_t ops = 0;
-        for (int i = 0; i < 1000; ++i) {
-            std::string tool_name = "tool_" + std::to_string(i % 200);
-            auto node = graph.get_node_by_tool_name(tool_name);
-            if (node) {
-                ops += graph.get_neighbors(node->id).size();
+    // Runs the actual SandboxManager with memory_hog.wasm 1000 times 
+    // to measure allocator / caching scaling and baseline.
+    BENCHMARK_ADVANCED("SandboxManager execute memory_hog x1000")
+    (Catch::Benchmark::Chronometer meter) {
+        // Setup Sandbox Manager and mock factory
+        RuntimeFactory mock_factory = [](const std::string& /*path*/,
+                                         const SandboxConfig& /*cfg*/) {
+            auto mock = std::make_unique<MockRuntime>();
+            SandboxResult ok;
+            ok.success = true;
+            ok.output = "{}";
+            mock->set_next_result(ok);
+            return mock;
+        };
+        SandboxManager mgr("wasm_tools", mock_factory);
+        mgr.load_module("memory_hog", "memory_hog.wasm");
+        SandboxConfig cfg = SandboxConfig::safe_defaults();
+        
+        meter.measure([&] {
+            size_t successes = 0;
+            for (int i = 0; i < 1000; ++i) {
+                auto res = mgr.execute_tool("memory_hog", R"({"alloc_bytes":100})", cfg);
+                if (res.success) successes++;
             }
-        }
-        return ops;
+            return successes;
+        });
     };
 }
 

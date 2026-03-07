@@ -78,7 +78,7 @@ private:
     std::unique_ptr<SessionManager> session_mgr_;
     std::unique_ptr<PolicyValidator> validator_;
     std::unique_ptr<VisualizationEngine> viz_;
-    // std::unique_ptr<SandboxManager> sandbox_mgr_;  // TODO: enable after Dev B merge
+    std::unique_ptr<SandboxManager> sandbox_mgr_;
 };
 
 } // namespace guardian
