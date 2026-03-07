@@ -13,7 +13,7 @@
 
 namespace guardian {
 
-// Forward declarations — implementations owned by other devs
+// Forward declarations
 class PolicyValidator;
 class SessionManager;
 class SandboxManager;
@@ -74,13 +74,11 @@ private:
     Config config_;
     bool initialized_ = false;
 
-    // Owned component instances (created after teammates merge implementations)
-    // Using raw pointers + flags for now since teammate implementations aren't linked yet
-    // Will upgrade to unique_ptr<PolicyValidator> etc. when implementations are available
+    // Component instances
     std::unique_ptr<SessionManager> session_mgr_;
-    // std::unique_ptr<PolicyValidator> validator_;    // TODO: enable after Dev C merge
+    std::unique_ptr<PolicyValidator> validator_;
+    std::unique_ptr<VisualizationEngine> viz_;
     // std::unique_ptr<SandboxManager> sandbox_mgr_;  // TODO: enable after Dev B merge
-    // std::unique_ptr<VisualizationEngine> viz_;      // TODO: enable after Dev D merge
 };
 
 } // namespace guardian

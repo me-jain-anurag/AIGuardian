@@ -64,15 +64,13 @@ add_library(guardian
     src/policy_graph.cpp
     src/config.cpp
     src/guardian.cpp
+    src/session_manager.cpp
+    src/policy_validator.cpp
+    src/tool_interceptor.cpp
+    src/visualization.cpp
+    src/logger.cpp
     # Dev B adds:
     # src/sandbox_manager.cpp
-    # Dev C adds:
-    # src/session_manager.cpp
-    # src/policy_validator.cpp
-    # src/tool_interceptor.cpp
-    # Dev D adds:
-    # src/visualization.cpp
-    # src/logger.cpp
 )
 
 target_include_directories(guardian PUBLIC
