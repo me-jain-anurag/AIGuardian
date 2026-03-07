@@ -154,6 +154,12 @@ if(GUARDIAN_BUILD_TESTS)
     add_executable(test_wasmedge tests/sandbox/test_wasmedge.cpp)
     target_link_libraries(test_wasmedge PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME test_wasmedge COMMAND test_wasmedge)
+
+    # Dev D: Performance Benchmarks
+    add_executable(bench_visualization tests/performance/bench_visualization.cpp)
+    target_link_libraries(bench_visualization PRIVATE guardian Catch2::Catch2WithMain)
+    # Benchmarks are typically run manually or with specific flags, but we can add as a test too
+    add_test(NAME bench_visualization COMMAND bench_visualization)
 endif()
 
 # ============================================================================

@@ -271,9 +271,9 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 15: Visualization Performance (tasks.md 19.3)
-- [ ] 15.1 Benchmark visualization rendering (<2s for 100-node graphs)
-- [ ] 15.2 Benchmark ASCII rendering for large graphs
-- [ ] 15.3 Profile DOT generation and optimize if needed
+- [x] 15.1 Benchmark visualization rendering (<2s for 100-node graphs)
+- [x] 15.2 Benchmark ASCII rendering for large graphs
+- [x] 15.3 Profile DOT generation and optimize if needed
 - _Requirements: 8.7, 12.6_
 
 > **📌 COMMIT 11 — Viz performance**
@@ -283,12 +283,12 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 16: Final Validation — Demos & Docs (tasks.md 22.2–22.4)
-- [ ] 16.1 Run all 3 CLI demos and verify visual output
-- [ ] 16.2 Verify demos complete within 90 seconds each
-- [ ] 16.3 Verify all examples compile and run (coordinate with Dev A)
-- [ ] 16.4 Run code formatting check across all owned files
-- [ ] 16.5 Final documentation review: README, API docs, policy guide, demo docs
-- [ ] 16.6 Verify all docs are accurate, up-to-date, and cross-linked
+- [x] 16.1 Run all 3 CLI demos and verify visual output
+- [x] 16.2 Verify demos complete within 90 seconds each
+- [x] 16.3 Verify all examples compile and run (coordinate with Dev A)
+- [x] 16.4 Run code formatting check across all owned files
+- [x] 16.5 Final documentation review: README, API docs, policy guide, demo docs
+- [x] 16.6 Verify all docs are accurate, up-to-date, and cross-linked
 - _Requirements: 9.5, 10.5, 11.5, 17.10, 18.6_
 
 > **📌 COMMIT 12 — Final fixes**
