@@ -11,6 +11,9 @@ cd AIGuardian
 git config core.autocrlf false
 git config core.eol lf
 git config pull.rebase true
+# Install hooks (PowerShell):
+Copy-Item scripts/hooks/pre-commit .git/hooks/pre-commit -Force
+Copy-Item scripts/hooks/commit-msg .git/hooks/commit-msg -Force
 git checkout -b feature/policy-graph
 ```
 

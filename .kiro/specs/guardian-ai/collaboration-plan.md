@@ -24,7 +24,13 @@ git config pull.rebase true
 git config user.name "Your Name"
 git config user.email "your.email@example.com"
 
-# 4. Verify .gitattributes and .editorconfig are present
+# 4. Install pre-commit hooks (Linux / Git Bash)
+sh scripts/setup-hooks.sh
+# OR on Windows PowerShell:
+# Copy-Item scripts/hooks/pre-commit .git/hooks/pre-commit -Force
+# Copy-Item scripts/hooks/commit-msg .git/hooks/commit-msg -Force
+
+# 5. Verify setup
 ls .gitattributes .editorconfig .gitignore
 ```
 
