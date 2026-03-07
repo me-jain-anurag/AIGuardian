@@ -18,7 +18,7 @@ git checkout -b feature/policy-graph
 ```
 
 ---
-
+<!-->
 ## Phase 1 — Core Foundation
 
 ### Task 1: Project Setup and Build System
@@ -211,7 +211,7 @@ git checkout -b feature/policy-graph
 > ```
 
 ---
-
+-->
 ## Phase 3 — Performance, Final Validation (tasks.md 19, 22)
 
 > **🔀 INTEGRATION: Sync with main before Phase 3**
