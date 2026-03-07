@@ -149,6 +149,62 @@ private:
 };
 
 // ============================================================================
+// WasmEdgeRuntime — real WasmEdge integration (Task 3, Linux only)
+// ============================================================================
+
+#ifdef HAVE_WASMEDGE
+
+/// Production runtime wrapping the WasmEdge C SDK.
+/// Enforces memory limits, timeouts, file access control, and network control.
+///
+/// Guarded by HAVE_WASMEDGE — Windows builds skip this entirely and use
+/// MockRuntime instead.
+///
+/// Usage:
+///   SandboxConfig cfg = SandboxConfig::safe_defaults();
+///   cfg.allowed_paths = {"/data"};
+///   auto rt = std::make_unique<WasmEdgeRuntime>("/path/to/tool.wasm", cfg);
+///   auto r = rt->execute("process", R"({"key":"val"})");
+class WasmEdgeRuntime : public IWasmRuntime {
+public:
+    /// Load a Wasm module from disk and configure the VM with the given
+    /// sandbox constraints.
+    /// @param wasm_path  Path to the .wasm binary.
+    /// @param config     Sandbox constraints (memory, timeout, paths, network).
+    /// @throws std::runtime_error on load failure.
+    WasmEdgeRuntime(const std::string& wasm_path, const SandboxConfig& config);
+    ~WasmEdgeRuntime() override;
+
+    // Non-copyable
+    WasmEdgeRuntime(const WasmEdgeRuntime&) = delete;
+    WasmEdgeRuntime& operator=(const WasmEdgeRuntime&) = delete;
+
+    // ---- IWasmRuntime interface -------------------------------------------
+    SandboxResult execute(const std::string& function_name,
+                          const std::string& params_json) override;
+    bool is_loaded() const override;
+    void reload() override;
+
+private:
+    /// Apply SandboxConfig to WasmEdge configure context.
+    void apply_config(const SandboxConfig& config);
+
+    /// Load the module from wasm_path_ into the VM.
+    void load_module();
+
+    /// Extract output from Wasm function return values as JSON string.
+    std::string extract_result_json() const;
+
+    struct Impl;                       // PIMPL for WasmEdge SDK types
+    std::unique_ptr<Impl> impl_;
+    std::string wasm_path_;
+    SandboxConfig config_;
+    bool loaded_ = false;
+};
+
+#endif // HAVE_WASMEDGE
+
+// ============================================================================
 // SandboxManager (Task 4 — stub kept for forward-compat)
 // ============================================================================
 
