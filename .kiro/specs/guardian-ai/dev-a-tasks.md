@@ -211,7 +211,7 @@ git checkout -b feature/policy-graph
 > ```
 
 ---
--->
+
 ## Phase 3 — Performance, Final Validation (tasks.md 19, 22)
 
 > **🔀 INTEGRATION: Sync with main before Phase 3**
@@ -248,10 +248,10 @@ git checkout -b feature/policy-graph
 > git add tests/performance/bench_policy_graph.cpp
 > git commit -m "test(perf): add policy graph performance benchmarks"
 > ```
-
+-->
 ### Task 11: Verify All Examples Compile and Run (tasks.md 17.5)
-- [ ] 11.1 Build all 4 examples (basic_integration, custom_policy, concurrent_sessions, sandbox_config)
-- [ ] 11.2 Run each example and verify output
+- [x] 11.1 Build all 4 examples (basic_integration, custom_policy, concurrent_sessions, sandbox_config)
+- [x] 11.2 Run each example and verify output
 - [x] 11.3 Verify examples demonstrate best practices and include error handling
 - _Requirements: 18.6_
 

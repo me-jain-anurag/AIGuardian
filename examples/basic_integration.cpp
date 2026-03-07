@@ -4,6 +4,7 @@
 // Shows basic Guardian initialization, session management, and tool validation
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <filesystem>
 
 #include "guardian/guardian.hpp"

@@ -9,6 +9,7 @@
 #include "guardian/sandbox_manager.hpp"
 #include "guardian/visualization.hpp"
 #include "guardian/logger.hpp"
+#include <nlohmann/json.hpp>
 
 #include <fstream>
 #include <filesystem>
@@ -70,8 +71,13 @@ Guardian::Guardian(const std::string& policy_file_path,
     viz_ = std::make_unique<VisualizationEngine>();
 
     // 6. Initialize SandboxManager
-    sandbox_mgr_ = std::make_unique<SandboxManager>(wasm_tools_dir);
-    if (!wasm_tools_dir.empty()) {
+    // Use default (mock) factory — in production, replace with WasmEdgeRuntime factory
+    RuntimeFactory default_factory = [](const std::string& /*path*/,
+                                        const SandboxConfig& /*cfg*/) {
+        return std::make_unique<MockRuntime>();
+    };
+    sandbox_mgr_ = std::make_unique<SandboxManager>(wasm_tools_dir, default_factory);
+    if (!wasm_tools_dir.empty() && fs::exists(wasm_tools_dir)) {
         // Scan and load wasm modules from directory
         for (const auto& entry : fs::directory_iterator(wasm_tools_dir)) {
             if (entry.path().extension() == ".wasm") {
