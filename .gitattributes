@@ -1,0 +1,33 @@
+# Guardian AI - Git Attributes
+# Ensures consistent line endings across Windows and Linux
+
+# Default: auto-detect and normalize to LF in repo, native on checkout
+* text=auto eol=lf
+
+# Force LF for all source code (critical for cross-platform builds)
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h text eol=lf
+*.c text eol=lf
+*.cmake text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.dot text eol=lf
+
+# Shell scripts must stay LF (will break on Linux with CRLF)
+*.sh text eol=lf
+
+# Batch scripts can be CRLF (Windows only)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files - do not touch
+*.wasm binary
+*.png binary
+*.svg binary
+*.jpg binary
+*.pdf binary

@@ -1,0 +1,68 @@
+# Guardian AI - .gitignore
+
+# === Build Output ===
+build/
+cmake-build-*/
+out/
+bin/
+lib/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# === CMake ===
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeSettings.json
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+
+# === IDE / Editor ===
+.vs/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+*.user
+*.suo
+*.ncrunchproject
+*.ncrunchsolution
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Dependencies (fetched by CMake) ===
+_deps/
+external/
+
+# === Test Output ===
+tests/output/
+*.log
+test-results/
+
+# === Wasm Tools (compiled binaries are committed, but build artifacts are not) ===
+wasm_tools/build/
+wasm_tools/*.o
+
+# === Documentation Build ===
+docs/_build/
+docs/html/
+
+# === Graphviz output (generated, not committed) ===
+*.svg
+*.png
+!docs/**/*.png
+!docs/**/*.svg
