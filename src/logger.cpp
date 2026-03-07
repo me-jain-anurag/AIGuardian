@@ -9,6 +9,7 @@
 #include <chrono>
 #include <ctime>
 #include <stdexcept>
+#include <nlohmann/json.hpp>
 
 namespace guardian {
 
@@ -235,35 +236,16 @@ std::string Logger::format_entry_text(const LogEntry& e) const {
     return oss.str();
 }
 
-// Escape a string for JSON (minimal but robust)
-static std::string json_escape(const std::string& s) {
-    std::string out;
-    out.reserve(s.size() + 4);
-    for (char c : s) {
-        switch (c) {
-            case '"':  out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\n': out += "\\n";  break;
-            case '\r': out += "\\r";  break;
-            case '\t': out += "\\t";  break;
-            default:   out += c;      break;
-        }
-    }
-    return out;
-}
-
 std::string Logger::entry_to_json(const LogEntry& e) const {
-    std::ostringstream oss;
-    oss << "{"
-        << "\"timestamp\":\"" << json_escape(e.timestamp) << "\","
-        << "\"level\":\""     << level_to_string(e.level) << "\","
-        << "\"component\":\""  << json_escape(e.component) << "\","
-        << "\"tool_name\":\""  << json_escape(e.tool_name) << "\","
-        << "\"session_id\":\""<< json_escape(e.session_id) << "\","
-        << "\"message\":\""   << json_escape(e.message)   << "\","
-        << "\"details\":\""   << json_escape(e.details)   << "\""
-        << "}";
-    return oss.str();
+    nlohmann::json j;
+    j["timestamp"] = e.timestamp;
+    j["level"]     = level_to_string(e.level);
+    j["component"] = e.component;
+    j["tool_name"] = e.tool_name;
+    j["session_id"]= e.session_id;
+    j["message"]   = e.message;
+    j["details"]   = e.details;
+    return j.dump();
 }
 
 } // namespace guardian

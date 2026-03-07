@@ -228,7 +228,8 @@ std::string Guardian::visualize_session(const std::string& session_id,
     if (format == "ascii") {
         opts.output_format = VisualizationOptions::ASCII;
     }
-    return viz_->render_sequence(policy_graph_, sequence, opts);
+    std::vector<ValidationResult> results;
+    return viz_->render_sequence(policy_graph_, sequence, results, opts);
 }
 
 // ============================================================================

@@ -149,11 +149,13 @@ TEST_CASE("Logger: writes to file via set_output_file", "[logger][file]") {
     }
 
     REQUIRE(fs::exists(path));
-    std::ifstream f(path);
-    std::string content((std::istreambuf_iterator<char>(f)),
-                         std::istreambuf_iterator<char>());
-    REQUIRE(content.find("Line 1") != std::string::npos);
-    REQUIRE(content.find("Line 2") != std::string::npos);
+    {
+        std::ifstream f(path);
+        std::string content((std::istreambuf_iterator<char>(f)),
+                             std::istreambuf_iterator<char>());
+        REQUIRE(content.find("Line 1") != std::string::npos);
+        REQUIRE(content.find("Line 2") != std::string::npos);
+    } // closes f
 
     cleanup(path);
 }
@@ -168,10 +170,12 @@ TEST_CASE("Logger: set_output_file empty string disables file logging", "[logger
     log.set_output_file("");        // disable
     log.info("comp", "not written to file");
 
-    std::ifstream f(path);
-    std::string content((std::istreambuf_iterator<char>(f)),
-                         std::istreambuf_iterator<char>());
-    REQUIRE(content.find("written") != std::string::npos);
+    {
+        std::ifstream f(path);
+        std::string content((std::istreambuf_iterator<char>(f)),
+                             std::istreambuf_iterator<char>());
+        REQUIRE(content.find("written") != std::string::npos);
+    } // closes f
 
     cleanup(path);
 }
@@ -232,7 +236,10 @@ TEST_CASE("Logger: messages with special chars produce valid JSON", "[logger][js
 TEST_CASE("Logger Property Tests", "[logger][property]") {
     // 9.1 All messages at or above level appear in export
     rc::check("Messages at or above min_level always stored",
-        [](const std::vector<std::string>& messages) {
+        []() {
+            auto messages = *rc::gen::container<std::vector<std::string>>(
+                rc::gen::container<std::string>(rc::gen::inRange<char>(32, 126))
+            );
             Logger log(LogLevel::INFO);
             for (const auto& msg : messages) {
                 log.info("prop", msg);
@@ -243,7 +250,10 @@ TEST_CASE("Logger Property Tests", "[logger][property]") {
 
     // 9.2 export_logs always produces valid JSON
     rc::check("export_logs always produces valid JSON",
-        [](const std::string& component, const std::string& message) {
+        []() {
+            auto component = *rc::gen::container<std::string>(rc::gen::inRange<char>(32, 126));
+            auto message = *rc::gen::container<std::string>(rc::gen::inRange<char>(32, 126));
+
             Logger log(LogLevel::DEBUG);
             log.debug(component, message);
             log.info (component, message);
@@ -254,7 +264,10 @@ TEST_CASE("Logger Property Tests", "[logger][property]") {
 
     // 9.3 Level filtering: filtered export has no entries below threshold
     rc::check("export_logs(WARN) never contains DEBUG or INFO entries",
-        [](const std::vector<std::string>& msgs) {
+        []() {
+            auto msgs = *rc::gen::container<std::vector<std::string>>(
+                rc::gen::container<std::string>(rc::gen::inRange<char>(32, 126))
+            );
             Logger log(LogLevel::DEBUG);
             for (const auto& m : msgs) {
                 log.debug("c", m);
@@ -266,7 +279,8 @@ TEST_CASE("Logger Property Tests", "[logger][property]") {
 
     // 9.4 clear() makes export_logs return empty array
     rc::check("clear() always results in empty export",
-        [](const std::string& msg) {
+        []() {
+            auto msg = *rc::gen::container<std::string>(rc::gen::inRange<char>(32, 126));
             Logger log(LogLevel::DEBUG);
             log.debug("c", msg);
             log.info ("c", msg);
