@@ -66,7 +66,7 @@ AIGuardian consists of four primary components:
 MIT License - Copyright (c) 2026 CodeGeass Team.
 
 ## CodeGeass Team Members
-me-jain-anurag
-Haruto1632
-Ao-chuba
-No-Reed
+- **me-jain-anurag**
+- **Haruto1632**
+- **Ao-chuba**
+- **No-Reed**
