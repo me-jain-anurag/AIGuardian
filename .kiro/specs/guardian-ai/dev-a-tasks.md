@@ -256,11 +256,11 @@ git checkout -b feature/policy-graph
 - _Requirements: 18.6_
 -->
 ### Task 12: Final Validation (tasks.md 22.1–22.4)
-- [ ] 12.1 Run complete test suite: unit + property + integration + performance
-- [ ] 12.2 Verify all demos complete within 90 seconds
+- [x] 12.1 Run complete test suite: unit + property + integration + performance
+- [x] 12.2 Verify all demos complete within 90 seconds
 - [ ] 12.3 Run static analysis (clang-tidy or MSVC /analyze)
 - [ ] 12.4 Check for memory leaks (valgrind on Linux via Dev B, or DrMemory on Windows)
-- [ ] 12.5 Verify thread safety (run concurrency tests under TSan if available)
+- [x] 12.5 Verify thread safety (run concurrency tests under TSan if available)
 - [ ] 12.6 Check code formatting consistency
 - _Requirements: 9.5, 10.5, 11.5, 17.10_
 
