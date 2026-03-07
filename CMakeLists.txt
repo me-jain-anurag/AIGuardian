@@ -63,8 +63,8 @@ endif()
 add_library(guardian
     src/policy_graph.cpp
     src/config.cpp
-    # Dev B adds:
-    # src/sandbox_manager.cpp
+    # Dev B:
+    src/sandbox_manager.cpp
     # Dev C adds:
     # src/session_manager.cpp
     # src/policy_validator.cpp
@@ -120,6 +120,16 @@ if(GUARDIAN_BUILD_TESTS)
     # add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
     # target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
     # add_test(NAME test_policy_graph COMMAND test_policy_graph)
+
+    # Dev B: Sandbox types verification
+    add_executable(test_sandbox_types tests/unit/test_sandbox_types.cpp)
+    target_link_libraries(test_sandbox_types PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME test_sandbox_types COMMAND test_sandbox_types)
+
+    # Dev B: MockRuntime + WasmExecutor tests
+    add_executable(test_sandbox_manager tests/unit/test_sandbox_manager.cpp)
+    target_link_libraries(test_sandbox_manager PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME test_sandbox_manager COMMAND test_sandbox_manager)
 endif()
 
 # ============================================================================

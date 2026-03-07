@@ -37,9 +37,13 @@ enum class NodeType {
 struct SandboxConfig {
     uint64_t memory_limit_mb = 128;
     uint32_t timeout_ms = 5000;
-    std::vector<std::string> allowed_paths;
+    std::vector<std::string> allowed_paths;      // empty = no file access
     bool network_access = false;
     std::map<std::string, std::string> environment_vars;
+
+    /// Returns a config with documented safe defaults:
+    ///   128 MB memory, 5000 ms timeout, no file access, no network.
+    static SandboxConfig safe_defaults() { return SandboxConfig{}; }
 };
 
 struct SandboxViolation {
