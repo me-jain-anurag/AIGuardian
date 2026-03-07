@@ -12,17 +12,32 @@ AIGuardian is a security middleware designed to enforce strict, verifiable polic
 
 ## 🛠 Quick Start
 
+### Prerequisites
+
+- CMake 3.16+
+- C++17 compatible compiler (GCC 9+, MSVC 2019+, Clang 10+)
+- Git
+
 ### Build
-```powershell
+```bash
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-### Run the Interactive Demo
-```powershell
-.\bin\Release\guardian_cli.exe --interactive --policy-path ../policies/financial.json
+### Run Tests
+```bash
+ctest --output-on-failure
 ```
+
+### Run the Interactive Demo
+```bash
+./bin/guardian_cli --interactive --policy-path ../policies/financial.json
+```
+
+### Windows Setup
+
+If you encounter "blocked by your organization's Device Guard policy" errors on Windows, see **[Windows Setup Guide](docs/WINDOWS_SETUP.md)** for Defender exclusion instructions.
 
 ## 🏗 Architecture
 
@@ -31,6 +46,15 @@ AIGuardian consists of four primary components:
 2. **Policy Validator**: The algorithmic heart that enforces graph rules.
 3. **Sandbox Manager**: Handles secure execution of tool modules.
 4. **Visualization & Logging**: Provides transparency into agent behavior.
+
+## 📂 Project Structure
+
+- `include/guardian/` - Public headers
+- `src/` - Implementation files
+- `tests/unit/` - Unit tests (Catch2 + RapidCheck)
+- `tests/integration/` - Integration test scenarios
+- `examples/` - Usage examples
+- `policies/` - Demo policy files
 
 ## 📚 Documentation
 

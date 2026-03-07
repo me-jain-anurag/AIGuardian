@@ -66,3 +66,7 @@ docs/html/
 *.png
 !docs/**/*.png
 !docs/**/*.svg
+
+# Generated test output
+sessions/
+build_output.txt

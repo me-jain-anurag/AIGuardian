@@ -175,14 +175,14 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 10: ToolInterceptor Class (tasks.md 7.1–7.2)
-- [ ] 10.1 Implement constructor accepting PolicyValidator*, SessionManager*, SandboxManager*
-- [ ] 10.2 Implement `intercept()` — capture tool name, parameters, timestamp
-- [ ] 10.3 Query SessionManager for current action sequence
-- [ ] 10.4 Pass tool call to PolicyValidator for validation
-- [ ] 10.5 On approval: delegate to SandboxManager for execution, then append to session
-- [ ] 10.6 On rejection: block execution, return error with reason
-- [ ] 10.7 Preserve original parameters for approved executions
-- [ ] 10.8 Implement template-based `execute_if_valid()` wrapper
+- [x] 10.1 Implement constructor accepting PolicyValidator*, SessionManager*, SandboxManager*
+- [x] 10.2 Implement `intercept()` — capture tool name, parameters, timestamp
+- [x] 10.3 Query SessionManager for current action sequence
+- [x] 10.4 Pass tool call to PolicyValidator for validation
+- [x] 10.5 On approval: delegate to SandboxManager for execution, then append to session
+- [x] 10.6 On rejection: block execution, return error with reason
+- [x] 10.7 Preserve original parameters for approved executions
+- [x] 10.8 Implement template-based `execute_if_valid()` wrapper
 - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
 > **📌 COMMIT 7 — Tool Interceptor**
@@ -195,12 +195,12 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 11: Tool Interceptor Tests (tasks.md 7.3–7.4)
-- [ ] 11.1 Unit tests: tool call capture with various parameters
-- [ ] 11.2 Unit tests: action sequence updates after interception
-- [ ] 11.3 Unit tests: approved execution flow (uses MockRuntime from Dev B)
-- [ ] 11.4 Unit tests: rejected execution blocking
-- [ ] 11.5 Unit tests: parameter preservation
-- [ ] 11.6 Property tests: capture completeness, sequence growth, validator communication, approve/reject, parameter preservation
+- [x] 11.1 Unit tests: tool call capture with various parameters
+- [x] 11.2 Unit tests: action sequence updates after interception
+- [x] 11.3 Unit tests: approved execution flow (uses MockRuntime from Dev B)
+- [x] 11.4 Unit tests: rejected execution blocking
+- [x] 11.5 Unit tests: parameter preservation
+- [x] 11.6 Property tests: capture completeness, sequence growth, validator communication, approve/reject, parameter preservation
 - _Requirements: 2.1, 2.2, 2.3, 2.5, 2.6, 2.7_
 
 > **📌 COMMIT 8 — Interceptor tests**
@@ -210,15 +210,15 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 12: Integration Tests (tasks.md 20.1–20.2)
-- [ ] 12.1 End-to-end: financial exfiltration scenario (read_accounts → send_email BLOCKED)
-- [ ] 12.2 End-to-end: financial safe path (read_accounts → generate_report → encrypt → send_email ALLOWED)
-- [ ] 12.3 End-to-end: developer deployment scenario (read_code → deploy_production BLOCKED)
-- [ ] 12.4 End-to-end: developer safe path (read_code → approval_request → deploy_production ALLOWED)
-- [ ] 12.5 End-to-end: DoS prevention (cycle detection triggers after threshold)
-- [ ] 12.6 End-to-end: concurrent session handling (independent validation)
-- [ ] 12.7 End-to-end: session persistence and recovery
-- [ ] 12.8 Error handling: policy file not found, invalid format, invalid session ID
-- [ ] 12.9 Error handling: internal error fail-safe (reject on error)
+- [x] 12.1 End-to-end: financial exfiltration scenario (read_accounts → send_email BLOCKED)
+- [x] 12.2 End-to-end: financial safe path (read_accounts → generate_report → encrypt → send_email ALLOWED)
+- [x] 12.3 End-to-end: developer deployment scenario (read_code → deploy_production BLOCKED)
+- [x] 12.4 End-to-end: developer safe path (read_code → approval_request → deploy_production ALLOWED)
+- [x] 12.5 End-to-end: DoS prevention (cycle detection triggers after threshold)
+- [x] 12.6 End-to-end: concurrent session handling (independent validation)
+- [x] 12.7 End-to-end: session persistence and recovery
+- [x] 12.8 Error handling: policy file not found, invalid format, invalid session ID
+- [x] 12.9 Error handling: internal error fail-safe (reject on error)
 - _Requirements: 9.1–9.4, 10.1–10.4, 11.1–11.4, 13.6, 16.8_
 
 > **📌 COMMIT 9 — Integration tests**
@@ -231,10 +231,10 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 13: Concurrent Sessions Example (tasks.md 17.3)
-- [ ] 13.1 Create `examples/concurrent_sessions.cpp`
-- [ ] 13.2 Show multiple concurrent sessions with independent validation
-- [ ] 13.3 Demonstrate session isolation and persistence
-- [ ] 13.4 Verify example compiles and runs
+- [x] 13.1 Create `examples/concurrent_sessions.cpp`
+- [x] 13.2 Show multiple concurrent sessions with independent validation
+- [x] 13.3 Demonstrate session isolation and persistence
+- [x] 13.4 Verify example compiles and runs
 - _Requirements: 18.5_
 
 > **📌 COMMIT 10 — Concurrent sessions example**
