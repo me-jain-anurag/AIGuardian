@@ -63,4 +63,10 @@ AIGuardian consists of four primary components:
 - [Demo Scenario Guide](docs/demo_guide.md)
 
 ## ⚖️ License
-MIT License - Copyright (c) 2026 Dev Team.
+MIT License - Copyright (c) 2026 CodeGeass Team.
+
+## CodeGeass Team Members
+me-jain-anurag
+Haruto1632
+Ao-chuba
+No-Reed
