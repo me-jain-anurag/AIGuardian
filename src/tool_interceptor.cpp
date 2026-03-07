@@ -32,9 +32,10 @@ ValidationResult ToolInterceptor::intercept_validation_only(
   // 2. Validate move
   ValidationResult result = validator_->validate(tool_name, sequence);
 
-  Logger::instance().log(result.approved ? LogLevel::INFO : LogLevel::WARN,
+  Logger::instance().log_with_context(result.approved ? LogLevel::INFO : LogLevel::WARN,
                          "ToolInterceptor",
-                         "validate(" + tool_name + "): " + result.reason);
+                         "validate(" + tool_name + "): " + result.reason,
+                         tool_name, session_id);
 
   // 3. If approved, append to session even if there's no sandbox execution yet
   // This allows execute_if_valid to track the tool call
@@ -68,9 +69,10 @@ ToolInterceptor::intercept(const std::string &session_id,
   // 2. Validate using PolicyValidator
   ValidationResult validation = validator_->validate(tool_name, sequence);
 
-  Logger::instance().log(validation.approved ? LogLevel::INFO : LogLevel::WARN,
+  Logger::instance().log_with_context(validation.approved ? LogLevel::INFO : LogLevel::WARN,
                          "ToolInterceptor",
-                         "validate(" + tool_name + "): " + validation.reason);
+                         "validate(" + tool_name + "): " + validation.reason,
+                         tool_name, session_id);
 
   if (!validation.approved) {
     return {validation, std::nullopt};

@@ -254,7 +254,7 @@ git checkout -b feature/policy-graph
 - [x] 11.2 Run each example and verify output
 - [x] 11.3 Verify examples demonstrate best practices and include error handling
 - _Requirements: 18.6_
-
+-->
 ### Task 12: Final Validation (tasks.md 22.1–22.4)
 - [ ] 12.1 Run complete test suite: unit + property + integration + performance
 - [ ] 12.2 Verify all demos complete within 90 seconds

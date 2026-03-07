@@ -189,7 +189,6 @@ if(GUARDIAN_BUILD_TESTS)
     target_link_libraries(bench_sandbox PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME bench_sandbox COMMAND bench_sandbox)
 
-<<<<<<< HEAD
     # Dev C — Tool Interceptor tests
     add_executable(test_tool_interceptor tests/unit/test_tool_interceptor.cpp)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
@@ -213,25 +212,21 @@ if(GUARDIAN_BUILD_TESTS)
         target_compile_options(concurrent_sessions PRIVATE -g0)
     endif()
     target_link_libraries(concurrent_sessions PRIVATE guardian)
-=======
+
     # Dev A: Policy Graph performance benchmarks (Task 10)
     add_executable(bench_policy_graph tests/performance/bench_policy_graph.cpp)
     target_link_libraries(bench_policy_graph PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME bench_policy_graph COMMAND bench_policy_graph)
->>>>>>> b7440e0 (feat(sandbox): integrate SandboxManager into Guardian and refine memory benchmark)
 endif()
 
 # ============================================================================
-# Examples (Dev A & Dev B)
+# Examples (Dev A)
 # ============================================================================
 add_executable(basic_integration examples/basic_integration.cpp)
 target_link_libraries(basic_integration PRIVATE guardian)
 
 add_executable(custom_policy examples/custom_policy.cpp)
 target_link_libraries(custom_policy PRIVATE guardian)
-
-add_executable(concurrent_sessions examples/concurrent_sessions.cpp)
-target_link_libraries(concurrent_sessions PRIVATE guardian)
 
 add_executable(sandbox_config_demo examples/sandbox_config.cpp)
 target_link_libraries(sandbox_config_demo PRIVATE guardian)
