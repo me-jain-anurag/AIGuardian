@@ -65,7 +65,7 @@ add_library(guardian
     src/config.cpp
     src/guardian.cpp
     # Dev B adds:
-    # src/sandbox_manager.cpp
+    src/sandbox_manager.cpp
     # Dev C adds:
     src/session_manager.cpp
     src/policy_validator.cpp
@@ -155,6 +155,12 @@ if(GUARDIAN_BUILD_TESTS)
     target_link_libraries(test_wasmedge PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME test_wasmedge COMMAND test_wasmedge)
 endif()
+
+# ============================================================================
+# Sandbox Configuration Demo (Dev B — Task 10)
+# ============================================================================
+add_executable(sandbox_config_demo examples/sandbox_config.cpp)
+target_link_libraries(sandbox_config_demo PRIVATE guardian)
 
 # ============================================================================
 # CLI Demo Tool (Phase 2 — Dev D)

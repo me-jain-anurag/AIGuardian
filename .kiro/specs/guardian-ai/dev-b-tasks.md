@@ -195,10 +195,10 @@ git checkout -b feature/sandbox-manager
 
 -->
 
-### Task 10: Sandbox Configuration Example (tasks.md 17.4)
-- [ ] 10.1 Create `examples/sandbox_config.cpp` showing per-tool sandbox configuration
-- [ ] 10.2 Demonstrate constraint enforcement and violation handling
-- [ ] 10.3 Verify example compiles and runs
+### Task 10: Sandbox Configuration Example (tasks.md 17.4) ✅
+- [x] 10.1 Create `examples/sandbox_config.cpp` showing per-tool sandbox configuration
+- [x] 10.2 Demonstrate constraint enforcement and violation handling
+- [x] 10.3 Verify example compiles and runs
 - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
 > **📌 COMMIT 9 — Sandbox example**
