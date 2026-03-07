@@ -180,7 +180,7 @@ git checkout -b feature/policy-graph
 - [x] 7.3 Test `validate_tool_call()` without execution
 - [x] 7.4 Test session management through API
 - [x] 7.5 Test error handling for API misuse
-- [ ] 7.6 Property tests: initialization, result structure, error messages
+- [x] 7.6 Property tests: initialization, result structure, error messages
 - _Requirements: 16.3, 16.4, 16.5, 16.8_
 
 > **📌 COMMIT 7 — Guardian API tests**
@@ -192,7 +192,7 @@ git checkout -b feature/policy-graph
 ### Task 8: Integration Examples (tasks.md 17.1–17.2)
 - [x] 8.1 Create `examples/basic_integration.cpp` — Guardian init, validate, session mgmt
 - [x] 8.2 Create `examples/custom_policy.cpp` — programmatic graph creation, serialization
-- [ ] 8.3 Verify examples compile and run
+- [x] 8.3 Verify examples compile and run
 - _Requirements: 18.1, 18.4, 18.6_
 
 > **📌 COMMIT 8 — Examples**

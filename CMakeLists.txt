@@ -113,11 +113,30 @@ if(GUARDIAN_BUILD_TESTS)
     )
     FetchContent_MakeAvailable(rapidcheck)
 
-    # Unit tests (add as devs contribute)
-    # add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
-    # target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
-    # add_test(NAME test_policy_graph COMMAND test_policy_graph)
+    # Unit tests
+    add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
+    target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_policy_graph COMMAND test_policy_graph)
+
+    add_executable(test_guardian tests/unit/test_guardian.cpp)
+    target_link_libraries(test_guardian PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_guardian COMMAND test_guardian)
 endif()
+
+# ============================================================================
+# Examples (Phase 2 — Dev A)
+# ============================================================================
+add_executable(example_basic examples/basic_integration.cpp)
+target_link_libraries(example_basic PRIVATE guardian)
+
+add_executable(example_custom examples/custom_policy.cpp)
+target_link_libraries(example_custom PRIVATE guardian)
+
+add_executable(example_concurrent examples/concurrent_sessions.cpp)
+target_link_libraries(example_concurrent PRIVATE guardian)
+
+add_executable(example_sandbox examples/sandbox_config.cpp)
+target_link_libraries(example_sandbox PRIVATE guardian)
 
 # ============================================================================
 # CLI Demo Tool (Phase 2 — Dev D)
