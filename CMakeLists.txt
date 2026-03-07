@@ -302,3 +302,20 @@ target_link_libraries(guardian_cli PRIVATE guardian)
 # Dev B: Policy JSON Validation Utility
 add_executable(validate_policies policies/validate_policies.cpp)
 target_link_libraries(validate_policies PRIVATE guardian)
+
+# ============================================================================
+# HTTP Gateway (MVP — cpp-httplib single header)
+# ============================================================================
+add_executable(guardian_gateway gateway/main.cpp)
+target_include_directories(guardian_gateway PRIVATE gateway)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
+    # httplib.h is a 670KB single header — GNU ld hits its section-size limit
+    # on Windows for large translation units. Use lld + -O1 to work around it.
+    target_compile_options(guardian_gateway PRIVATE -g0 -O1)
+    target_link_options(guardian_gateway PRIVATE -fuse-ld=lld)
+endif()
+target_link_libraries(guardian_gateway PRIVATE guardian)
+# Winsock2 + crypt32 required by cpp-httplib on Windows
+if(WIN32)
+    target_link_libraries(guardian_gateway PRIVATE ws2_32 crypt32)
+endif()

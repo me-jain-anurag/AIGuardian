@@ -70,3 +70,6 @@ docs/html/
 # Generated test output
 sessions/
 build_output.txt
+
+# Demo secrets
+demo/.env

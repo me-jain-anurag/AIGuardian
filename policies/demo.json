@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "id": "read_db",
+      "tool_name": "read_db",
+      "risk_level": "HIGH",
+      "node_type": "SENSITIVE_SOURCE"
+    },
+    {
+      "id": "send_email",
+      "tool_name": "send_email",
+      "risk_level": "CRITICAL",
+      "node_type": "EXTERNAL_DESTINATION"
+    },
+    {
+      "id": "create_ticket",
+      "tool_name": "create_ticket",
+      "risk_level": "LOW",
+      "node_type": "NORMAL"
+    },
+    {
+      "id": "search_kb",
+      "tool_name": "search_kb",
+      "risk_level": "LOW",
+      "node_type": "NORMAL"
+    },
+    {
+      "id": "read_code",
+      "tool_name": "read_code",
+      "risk_level": "MEDIUM",
+      "node_type": "SENSITIVE_SOURCE"
+    },
+    {
+      "id": "request_approval",
+      "tool_name": "request_approval",
+      "risk_level": "LOW",
+      "node_type": "DATA_PROCESSOR"
+    },
+    {
+      "id": "deploy_hotfix",
+      "tool_name": "deploy_hotfix",
+      "risk_level": "CRITICAL",
+      "node_type": "EXTERNAL_DESTINATION"
+    }
+  ],
+  "edges": [
+    { "from": "search_kb",       "to": "create_ticket" },
+    { "from": "search_kb",       "to": "send_email"    },
+    { "from": "read_db",         "to": "create_ticket" },
+    { "from": "read_db",         "to": "request_approval" },
+    { "from": "read_code",       "to": "request_approval" },
+    { "from": "request_approval","to": "deploy_hotfix" },
+    { "from": "request_approval","to": "send_email"    }
+  ]
+}
