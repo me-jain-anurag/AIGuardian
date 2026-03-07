@@ -205,27 +205,95 @@ private:
 #endif // HAVE_WASMEDGE
 
 // ============================================================================
-// SandboxManager (Task 4 — stub kept for forward-compat)
+// SandboxManager — full implementation (Task 4)
 // ============================================================================
 
+/// Manages a pool of WasmExecutor instances keyed by tool name.
+/// Thread-safe: uses std::shared_mutex for concurrent reads / exclusive writes.
+///
+/// Usage:
+///   // Create with a factory (MockRuntime for tests, WasmEdgeRuntime for prod)
+///   auto factory = [](const std::string& path, const SandboxConfig& cfg) {
+///       return std::make_unique<MockRuntime>();
+///   };
+///   SandboxManager mgr("/path/to/wasm_tools", factory);
+///   mgr.load_module("encrypt", "encrypt.wasm");
+///   auto result = mgr.execute_tool("encrypt", R"({"data":"..."})",
+///                                   SandboxConfig::safe_defaults());
 class SandboxManager {
 public:
+    /// Construct with a wasm_tools directory and a RuntimeFactory.
+    /// @param wasm_tools_dir  Base directory for .wasm files.
+    /// @param factory         Creates IWasmRuntime instances from a path+config.
+    SandboxManager(const std::string& wasm_tools_dir,
+                   RuntimeFactory factory);
+
+    /// Construct with defaults (no factory — load_module will fail until set).
     SandboxManager() = default;
     ~SandboxManager() = default;
 
-    // Module management
+    // Non-copyable
+    SandboxManager(const SandboxManager&) = delete;
+    SandboxManager& operator=(const SandboxManager&) = delete;
+
+    // ---- Module management (Task 4.1, 4.2, 4.4) ---------------------------
+
+    /// Load a Wasm module and cache its executor.
+    /// @param tool_name  Logical name for the tool (e.g. "encrypt").
+    /// @param wasm_path  Path to the .wasm file (relative to wasm_tools_dir
+    ///                   or absolute).
     void load_module(const std::string& tool_name, const std::string& wasm_path);
+
+    /// Unload a cached executor.
     void unload_module(const std::string& tool_name);
+
+    /// Check whether a tool is loaded.
     bool has_module(const std::string& tool_name) const;
 
-    // Execution
+    // ---- Execution (Task 4.3) ---------------------------------------------
+
+    /// Execute a tool: lookup module → apply config → run.
+    /// Uses the per-tool config if set, otherwise the default config,
+    /// unless an explicit config is provided.
     SandboxResult execute_tool(const std::string& tool_name,
                                 const std::string& params_json,
                                 const SandboxConfig& config);
 
-    // Configuration
+    /// Execute a tool using its stored config (per-tool or default).
+    SandboxResult execute_tool(const std::string& tool_name,
+                                const std::string& params_json);
+
+    // ---- Configuration (Task 4.6, 4.7, 4.8) ------------------------------
+
+    /// Set the default sandbox config used when no per-tool config exists.
     void set_default_config(const SandboxConfig& config);
+
+    /// Set a per-tool sandbox config.
+    void set_tool_config(const std::string& tool_name,
+                         const SandboxConfig& config);
+
+    /// Get the effective config for a tool (per-tool → default → safe).
     SandboxConfig get_config_for_tool(const std::string& tool_name) const;
+
+    /// Get the wasm_tools directory.
+    const std::string& wasm_tools_dir() const;
+
+    /// Set the RuntimeFactory (for deferred initialization).
+    void set_runtime_factory(RuntimeFactory factory);
+
+private:
+    std::string wasm_tools_dir_;
+    RuntimeFactory factory_;
+    SandboxConfig default_config_ = SandboxConfig::safe_defaults();
+
+    // Thread-safe executor pool (Task 4.5)
+    mutable std::shared_mutex executors_mutex_;
+    std::map<std::string, std::unique_ptr<WasmExecutor>> executors_;
+
+    // Per-tool config storage (Task 4.6)
+    mutable std::shared_mutex configs_mutex_;
+    std::map<std::string, SandboxConfig> tool_configs_;
 };
 
 } // namespace guardian
+

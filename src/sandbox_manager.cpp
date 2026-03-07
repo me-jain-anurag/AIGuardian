@@ -491,38 +491,115 @@ void WasmEdgeRuntime::reload() {
 #endif // HAVE_WASMEDGE
 
 // ============================================================================
-// SandboxManager — minimal stubs (full implementation in Task 4)
+// SandboxManager — full implementation (Task 4)
 // ============================================================================
 
-void SandboxManager::load_module(const std::string& /*tool_name*/,
-                                 const std::string& /*wasm_path*/) {
-    // TODO(Task 4): implement with RuntimeFactory and executor caching
+SandboxManager::SandboxManager(const std::string& wasm_tools_dir,
+                               RuntimeFactory factory)
+    : wasm_tools_dir_(wasm_tools_dir)
+    , factory_(std::move(factory)) {}
+
+// -- Module management (Task 4.1, 4.2, 4.4) --------------------------------
+
+void SandboxManager::load_module(const std::string& tool_name,
+                                 const std::string& wasm_path) {
+    if (!factory_) {
+        throw std::runtime_error(
+            "SandboxManager::load_module: no RuntimeFactory set");
+    }
+
+    // Resolve path: if relative, prepend wasm_tools_dir.
+    std::string resolved = wasm_path;
+    if (!wasm_tools_dir_.empty() &&
+        !wasm_path.empty() && wasm_path[0] != '/') {
+        resolved = wasm_tools_dir_ + "/" + wasm_path;
+    }
+
+    // Get the effective config for this tool.
+    SandboxConfig cfg = get_config_for_tool(tool_name);
+
+    // Create runtime via factory.
+    auto runtime = factory_(resolved, cfg);
+    if (!runtime) {
+        throw std::runtime_error(
+            "SandboxManager::load_module: factory returned null for " +
+            tool_name);
+    }
+
+    // Wrap in WasmExecutor and cache.
+    auto executor = std::make_unique<WasmExecutor>(
+        std::move(runtime), resolved);
+
+    std::unique_lock lock(executors_mutex_);
+    executors_[tool_name] = std::move(executor);
 }
 
-void SandboxManager::unload_module(const std::string& /*tool_name*/) {
-    // TODO(Task 4)
+void SandboxManager::unload_module(const std::string& tool_name) {
+    std::unique_lock lock(executors_mutex_);
+    executors_.erase(tool_name);
 }
 
-bool SandboxManager::has_module(const std::string& /*tool_name*/) const {
-    return false; // TODO(Task 4)
+bool SandboxManager::has_module(const std::string& tool_name) const {
+    std::shared_lock lock(executors_mutex_);
+    return executors_.count(tool_name) > 0;
 }
 
-SandboxResult SandboxManager::execute_tool(const std::string& /*tool_name*/,
-                                           const std::string& /*params_json*/,
-                                           const SandboxConfig& /*config*/) {
-    SandboxResult r;
-    r.success = false;
-    r.error   = "SandboxManager not yet implemented";
-    return r; // TODO(Task 4)
+// -- Execution (Task 4.3) ---------------------------------------------------
+
+SandboxResult SandboxManager::execute_tool(const std::string& tool_name,
+                                           const std::string& params_json,
+                                           const SandboxConfig& config) {
+    // Lookup executor under shared lock.
+    std::shared_lock lock(executors_mutex_);
+    auto it = executors_.find(tool_name);
+    if (it == executors_.end()) {
+        SandboxResult r;
+        r.success = false;
+        r.error   = "SandboxManager: module not loaded: " + tool_name;
+        return r;
+    }
+
+    // Execute (WasmExecutor handles timing and timeout).
+    return it->second->execute("_start", params_json, config);
 }
 
-void SandboxManager::set_default_config(const SandboxConfig& /*config*/) {
-    // TODO(Task 4)
+SandboxResult SandboxManager::execute_tool(const std::string& tool_name,
+                                           const std::string& params_json) {
+    return execute_tool(tool_name, params_json,
+                        get_config_for_tool(tool_name));
+}
+
+// -- Configuration (Task 4.6, 4.7, 4.8) ------------------------------------
+
+void SandboxManager::set_default_config(const SandboxConfig& config) {
+    std::unique_lock lock(configs_mutex_);
+    default_config_ = config;
+}
+
+void SandboxManager::set_tool_config(const std::string& tool_name,
+                                     const SandboxConfig& config) {
+    std::unique_lock lock(configs_mutex_);
+    tool_configs_[tool_name] = config;
 }
 
 SandboxConfig SandboxManager::get_config_for_tool(
-        const std::string& /*tool_name*/) const {
-    return SandboxConfig::safe_defaults(); // TODO(Task 4)
+        const std::string& tool_name) const {
+    std::shared_lock lock(configs_mutex_);
+    // Per-tool config takes priority → default config → safe defaults.
+    auto it = tool_configs_.find(tool_name);
+    if (it != tool_configs_.end()) {
+        return it->second;
+    }
+    return default_config_;  // already initialised to safe_defaults()
+}
+
+const std::string& SandboxManager::wasm_tools_dir() const {
+    return wasm_tools_dir_;
+}
+
+void SandboxManager::set_runtime_factory(RuntimeFactory factory) {
+    factory_ = std::move(factory);
 }
 
 } // namespace guardian
+
