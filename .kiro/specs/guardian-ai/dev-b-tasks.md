@@ -11,6 +11,8 @@ cd AIGuardian
 git config core.autocrlf false
 git config core.eol lf
 git config pull.rebase true
+# Install hooks (Linux):
+sh scripts/setup-hooks.sh
 git checkout -b feature/sandbox-manager
 ```
 

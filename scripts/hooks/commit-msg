@@ -1,0 +1,25 @@
+#!/bin/sh
+# scripts/hooks/commit-msg
+# Validates conventional commit message format
+# Format: type(scope): description
+
+MSG_FILE="$1"
+MSG=$(head -1 "$MSG_FILE")
+
+# Check format: type(scope): description
+if ! echo "$MSG" | grep -qE '^(feat|fix|test|refactor|docs|build|perf|chore)\(.+\): .+$'; then
+    echo "❌ Commit message does not follow conventional format."
+    echo ""
+    echo "Expected: type(scope): description"
+    echo "Types: feat, fix, test, refactor, docs, build, perf, chore"
+    echo ""
+    echo "Examples:"
+    echo "  feat(policy-graph): implement adjacency list"
+    echo "  test(config): add round-trip serialization tests"
+    echo "  fix(sandbox): handle timeout edge case"
+    echo ""
+    echo "Your message: $MSG"
+    echo ""
+    echo "Bypass with: git commit --no-verify"
+    exit 1
+fi
