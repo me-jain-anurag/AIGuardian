@@ -71,13 +71,6 @@ add_library(guardian
     src/logger.cpp
     # Dev B adds:
     # src/sandbox_manager.cpp
-    # Dev C adds:
-    src/session_manager.cpp
-    src/policy_validator.cpp
-    # src/tool_interceptor.cpp   (Phase 2)
-    # Dev D adds:
-    # src/visualization.cpp
-    # src/logger.cpp
 )
 
 target_include_directories(guardian PUBLIC
@@ -120,20 +113,14 @@ if(GUARDIAN_BUILD_TESTS)
     )
     FetchContent_MakeAvailable(rapidcheck)
 
-    # Unit tests (add as devs contribute)
-    # add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
-    # target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
-    # add_test(NAME test_policy_graph COMMAND test_policy_graph)
+    # Unit tests
+    add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
+    target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_policy_graph COMMAND test_policy_graph)
 
-    # Dev C — Session Manager tests
-    add_executable(test_session_manager tests/unit/test_session_manager.cpp)
-    target_link_libraries(test_session_manager PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
-    add_test(NAME test_session_manager COMMAND test_session_manager)
-
-    # Dev C — Policy Validator tests
-    add_executable(test_policy_validator tests/unit/test_policy_validator.cpp)
-    target_link_libraries(test_policy_validator PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
-    add_test(NAME test_policy_validator COMMAND test_policy_validator)
+    add_executable(test_guardian tests/unit/test_guardian.cpp)
+    target_link_libraries(test_guardian PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_guardian COMMAND test_guardian)
 endif()
 
 # ============================================================================

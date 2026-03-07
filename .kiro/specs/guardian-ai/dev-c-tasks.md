@@ -22,22 +22,22 @@ git checkout -b feature/validator-session
 ## Phase 1 — Session Manager + Policy Validator
 
 ### Task 1: Session Manager Data Structures (tasks.md 5.1)
-- [x] 1.1 Implement `Session` struct with session_id, action_sequence, created_at, last_activity, metadata
-- [x] 1.2 Add UUID generation for session identifiers (use `<random>` — see cross-platform section)
-- [x] 1.3 Verify `ToolCall` struct in `types.hpp` has: tool_name, parameters, timestamp, session_id
+- [ ] 1.1 Implement `Session` struct with session_id, action_sequence, created_at, last_activity, metadata
+- [ ] 1.2 Add UUID generation for session identifiers (use `<random>` — see cross-platform section)
+- [ ] 1.3 Verify `ToolCall` struct in `types.hpp` has: tool_name, parameters, timestamp, session_id
 - _Requirements: 11.1, 2.2_
 
 ### Task 2: SessionManager Class (tasks.md 5.2–5.3)
-- [x] 2.1 Implement `create_session()` generating unique session IDs
-- [x] 2.2 Implement `end_session()` for session lifecycle management
-- [x] 2.3 Implement `append_tool_call()` for sequence tracking
-- [x] 2.4 Implement `get_sequence()` for sequence retrieval
-- [x] 2.5 Implement `has_session()` for validation
-- [x] 2.6 Add thread-safe session storage with `std::shared_mutex`
-- [x] 2.7 Implement `persist_session()` writing action sequence to JSON file
-- [x] 2.8 Implement `get_all_sessions()` for audit queries
-- [x] 2.9 Add session timeout logic with configurable expiry
-- [x] 2.10 Add configurable maximum concurrent sessions limit
+- [ ] 2.1 Implement `create_session()` generating unique session IDs
+- [ ] 2.2 Implement `end_session()` for session lifecycle management
+- [ ] 2.3 Implement `append_tool_call()` for sequence tracking
+- [ ] 2.4 Implement `get_sequence()` for sequence retrieval
+- [ ] 2.5 Implement `has_session()` for validation
+- [ ] 2.6 Add thread-safe session storage with `std::shared_mutex`
+- [ ] 2.7 Implement `persist_session()` writing action sequence to JSON file
+- [ ] 2.8 Implement `get_all_sessions()` for audit queries
+- [ ] 2.9 Add session timeout logic with configurable expiry
+- [ ] 2.10 Add configurable maximum concurrent sessions limit
 - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.7, 11.8_
 
 > **📌 COMMIT 1 — Session Manager**
@@ -52,12 +52,12 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 3: Session Manager Tests (tasks.md 5.4–5.5)
-- [x] 3.1 Unit tests: session creation and ID uniqueness
-- [x] 3.2 Unit tests: concurrent session isolation (multi-threaded test)
-- [x] 3.3 Unit tests: action sequence growth and retrieval
-- [x] 3.4 Unit tests: session persistence to JSON and loading
-- [x] 3.5 Unit tests: session timeout behavior
-- [x] 3.6 Property tests: ID uniqueness, new session initialization, isolation, persistence, query round-trip
+- [ ] 3.1 Unit tests: session creation and ID uniqueness
+- [ ] 3.2 Unit tests: concurrent session isolation (multi-threaded test)
+- [ ] 3.3 Unit tests: action sequence growth and retrieval
+- [ ] 3.4 Unit tests: session persistence to JSON and loading
+- [ ] 3.5 Unit tests: session timeout behavior
+- [ ] 3.6 Property tests: ID uniqueness, new session initialization, isolation, persistence, query round-trip
 - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.6, 11.7_
 
 > **📌 COMMIT 2 — Session tests**
@@ -69,24 +69,24 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 4: Validation Result Structures (tasks.md 6.1)
-- [x] 4.1 Verify `ValidationResult` in `types.hpp` has: approved, reason, suggested_alternatives, detected_cycle, detected_exfiltration
-- [x] 4.2 Verify `CycleInfo` in `types.hpp` has: cycle_start_index, cycle_length, cycle_tools
-- [x] 4.3 Verify `ExfiltrationPath` in `types.hpp` has: source_node, destination_node, path
+- [ ] 4.1 Verify `ValidationResult` in `types.hpp` has: approved, reason, suggested_alternatives, detected_cycle, detected_exfiltration
+- [ ] 4.2 Verify `CycleInfo` in `types.hpp` has: cycle_start_index, cycle_length, cycle_tools
+- [ ] 4.3 Verify `ExfiltrationPath` in `types.hpp` has: source_node, destination_node, path
 - _Requirements: 5.6, 6.4, 7.6_
 
 ### Task 5: Transition Validation (tasks.md 6.2)
-- [x] 5.1 Implement `check_transition(from_tool, to_tool)` verifying edge existence in graph
-- [x] 5.2 Handle initial tool call (empty previous tool) — allow any tool defined in graph
-- [x] 5.3 Return descriptive reasons for rejections
-- [x] 5.4 Suggest valid alternatives from graph neighbors in rejection response
+- [ ] 5.1 Implement `check_transition(from_tool, to_tool)` verifying edge existence in graph
+- [ ] 5.2 Handle initial tool call (empty previous tool) — allow any tool defined in graph
+- [ ] 5.3 Return descriptive reasons for rejections
+- [ ] 5.4 Suggest valid alternatives from graph neighbors in rejection response
 - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 ### Task 6: Cycle Detection Algorithm (tasks.md 6.3)
-- [x] 6.1 Implement `detect_cycle()` using frequency map approach (see design.md Algorithm 2)
-- [x] 6.2 Track consecutive tool call repetitions
-- [x] 6.3 Support per-tool cycle thresholds from configuration
-- [x] 6.4 Return `CycleInfo` with start index, length, and tools
-- [x] 6.5 Distinguish between legitimate repeated calls and malicious loops
+- [ ] 6.1 Implement `detect_cycle()` using frequency map approach (see design.md Algorithm 2)
+- [ ] 6.2 Track consecutive tool call repetitions
+- [ ] 6.3 Support per-tool cycle thresholds from configuration
+- [ ] 6.4 Return `CycleInfo` with start index, length, and tools
+- [ ] 6.5 Distinguish between legitimate repeated calls and malicious loops
 - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
 > **📌 COMMIT 3 — Transition + cycle detection**
@@ -100,12 +100,12 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 7: Exfiltration Pattern Detection (tasks.md 6.4)
-- [x] 7.1 Implement `detect_exfiltration()` using node type checks (see design.md Algorithm 3)
-- [x] 7.2 Identify SENSITIVE_SOURCE → EXTERNAL_DESTINATION direct paths
-- [x] 7.3 Check for intermediate DATA_PROCESSOR nodes in path
-- [x] 7.4 Approve paths that go through at least one DATA_PROCESSOR
-- [x] 7.5 Return `ExfiltrationPath` with source, destination, and path
-- [x] 7.6 Identify specific patterns: file_read → network_post
+- [ ] 7.1 Implement `detect_exfiltration()` using node type checks (see design.md Algorithm 3)
+- [ ] 7.2 Identify SENSITIVE_SOURCE → EXTERNAL_DESTINATION direct paths
+- [ ] 7.3 Check for intermediate DATA_PROCESSOR nodes in path
+- [ ] 7.4 Approve paths that go through at least one DATA_PROCESSOR
+- [ ] 7.5 Return `ExfiltrationPath` with source, destination, and path
+- [ ] 7.6 Identify specific patterns: file_read → network_post
 - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
 > **📌 COMMIT 4 — Exfiltration detection**
@@ -119,13 +119,13 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 8: Main Validate Method + Path Validation (tasks.md 6.5–6.6)
-- [x] 8.1 Implement `validate()` coordinating transition, cycle, and exfiltration checks
-- [x] 8.2 Implement validation caching with LRU eviction for repeated patterns
-- [x] 8.3 Ensure deterministic validation results
-- [x] 8.4 Implement `is_valid_path()` using graph traversal
-- [x] 8.5 Support arbitrary path lengths
-- [x] 8.6 Handle multiple valid paths (approve if any matches)
-- [x] 8.7 Return matched path or violation point in results
+- [ ] 8.1 Implement `validate()` coordinating transition, cycle, and exfiltration checks
+- [ ] 8.2 Implement validation caching with LRU eviction for repeated patterns
+- [ ] 8.3 Ensure deterministic validation results
+- [ ] 8.4 Implement `is_valid_path()` using graph traversal
+- [ ] 8.5 Support arbitrary path lengths
+- [ ] 8.6 Handle multiple valid paths (approve if any matches)
+- [ ] 8.7 Return matched path or violation point in results
 - _Requirements: 5.5, 5.7, 14.1, 14.2, 14.3, 14.4, 14.6_
 
 > **📌 COMMIT 5 — Main validate + path validation**
@@ -138,13 +138,13 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 9: Policy Validator Tests (tasks.md 6.7–6.8)
-- [x] 9.1 Unit tests: transition validation with valid/invalid edges
-- [x] 9.2 Unit tests: initial tool call handling (empty sequence)
-- [x] 9.3 Unit tests: cycle detection with various thresholds (default 10, per-tool custom)
-- [x] 9.4 Unit tests: exfiltration pattern detection (direct path blocked, safe path allowed)
-- [x] 9.5 Unit tests: validation caching behavior (cache hit returns same result)
-- [x] 9.6 Unit tests: deterministic validation
-- [x] 9.7 Property tests: transition validation, determinism, result structure, cycle detection, exfiltration blocking, safe path approval, path length support, multiple paths, caching
+- [ ] 9.1 Unit tests: transition validation with valid/invalid edges
+- [ ] 9.2 Unit tests: initial tool call handling (empty sequence)
+- [ ] 9.3 Unit tests: cycle detection with various thresholds (default 10, per-tool custom)
+- [ ] 9.4 Unit tests: exfiltration pattern detection (direct path blocked, safe path allowed)
+- [ ] 9.5 Unit tests: validation caching behavior (cache hit returns same result)
+- [ ] 9.6 Unit tests: deterministic validation
+- [ ] 9.7 Property tests: transition validation, determinism, result structure, cycle detection, exfiltration blocking, safe path approval, path length support, multiple paths, caching
 - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.7, 6.1, 6.2, 6.5, 7.4, 7.5, 14.3, 14.4_
 
 > **📌 COMMIT 6 — Validator tests**
