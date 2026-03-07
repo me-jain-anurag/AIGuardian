@@ -1,0 +1,54 @@
+{
+  "nodes": [
+    {
+      "id": "read_db",
+      "tool_name": "read_db",
+      "risk_level": "HIGH",
+      "node_type": "SENSITIVE_SOURCE"
+    },
+    {
+      "id": "send_network",
+      "tool_name": "send_network",
+      "risk_level": "HIGH",
+      "node_type": "EXTERNAL_DESTINATION"
+    },
+    {
+      "id": "git_pull",
+      "tool_name": "git_pull",
+      "risk_level": "LOW",
+      "node_type": "NORMAL"
+    },
+    {
+      "id": "build_code",
+      "tool_name": "build_code",
+      "risk_level": "MEDIUM",
+      "node_type": "NORMAL"
+    },
+    {
+      "id": "run_tests",
+      "tool_name": "run_tests",
+      "risk_level": "LOW",
+      "node_type": "NORMAL"
+    },
+    {
+      "id": "allocate_memory",
+      "tool_name": "allocate_memory",
+      "risk_level": "MEDIUM",
+      "node_type": "NORMAL"
+    }
+  ],
+  "edges": [
+    {
+      "from": "git_pull",
+      "to": "build_code"
+    },
+    {
+      "from": "build_code",
+      "to": "run_tests"
+    },
+    {
+      "from": "allocate_memory",
+      "to": "allocate_memory"
+    }
+  ]
+}
