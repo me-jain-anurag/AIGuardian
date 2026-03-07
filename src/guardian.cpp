@@ -5,10 +5,10 @@
 #include "guardian/policy_graph.hpp"
 #include "guardian/config.hpp"
 #include "guardian/session_manager.hpp"
-// TODO: uncomment after teammate merges:
-// #include "guardian/policy_validator.hpp"
-// #include "guardian/sandbox_manager.hpp"
-// #include "guardian/visualization.hpp"
+#include "guardian/policy_validator.hpp"
+// #include "guardian/sandbox_manager.hpp"  // TODO: enable after Dev B's WasmEdge integration
+#include "guardian/visualization.hpp"
+#include "guardian/logger.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -55,17 +55,34 @@ Guardian::Guardian(const std::string& policy_file_path,
             std::string("Guardian: failed to parse policy file — ") + e.what());
     }
 
-    // 3. Initialize SessionManager (Dev C's implementation)
+    Logger::instance().log(LogLevel::INFO, "Guardian",
+        "Loaded policy graph: " + std::to_string(policy_graph_.node_count()) +
+        " nodes, " + std::to_string(policy_graph_.edge_count()) + " edges");
+
+    // 3. Initialize SessionManager
     session_mgr_ = std::make_unique<SessionManager>();
 
-    // 4. Initialize other components (after teammates merge)
-    // validator_ = std::make_unique<PolicyValidator>(policy_graph_);
+    // 4. Initialize PolicyValidator
+    validator_ = std::make_unique<PolicyValidator>(policy_graph_);
+    validator_->set_cycle_threshold(config_.cycle_detection.default_threshold);
+
+    // 5. Initialize VisualizationEngine
+    viz_ = std::make_unique<VisualizationEngine>();
+
+    // 6. Initialize SandboxManager (after Dev B merge)
     // sandbox_mgr_ = std::make_unique<SandboxManager>();
     // if (!wasm_tools_dir.empty()) {
-    //     // Load wasm modules from directory
+    //     // Scan and load wasm modules from directory
+    //     for (const auto& entry : fs::directory_iterator(wasm_tools_dir)) {
+    //         if (entry.path().extension() == ".wasm") {
+    //             sandbox_mgr_->load_module(
+    //                 entry.path().stem().string(), entry.path().string());
+    //         }
+    //     }
     // }
-    // viz_ = std::make_unique<VisualizationEngine>();
 
+    Logger::instance().log(LogLevel::INFO, "Guardian",
+        "Initialization complete (sandbox pending Dev B merge)");
     initialized_ = true;
 }
 
@@ -93,23 +110,16 @@ Guardian::execute_tool(const std::string& tool_name,
                 std::nullopt};
     }
 
-    // Verify tool exists in policy graph
-    if (!policy_graph_.has_node(tool_name)) {
-        // Suggest valid tools
-        auto all_ids = policy_graph_.get_all_node_ids();
-        return {ValidationResult{false, "Unknown tool: " + tool_name, all_ids, {}, {}},
-                std::nullopt};
-    }
-
     // Step 1: Get current action sequence
     auto sequence = session_mgr_->get_sequence(session_id);
 
-    // Step 2: Validate (once Dev C's PolicyValidator is linked)
-    // ValidationResult validation = validator_->validate(tool_name, sequence);
-    // For now, approve all calls (placeholder until validator is linked)
-    ValidationResult validation;
-    validation.approved = true;
-    validation.reason = "Approved (validator not yet linked — awaiting Dev C merge)";
+    // Step 2: Validate using PolicyValidator
+    ValidationResult validation = validator_->validate(tool_name, sequence);
+
+    Logger::instance().log(
+        validation.approved ? LogLevel::INFO : LogLevel::WARN,
+        "Guardian",
+        "validate(" + tool_name + "): " + validation.reason);
 
     if (!validation.approved) {
         return {validation, std::nullopt};
@@ -145,16 +155,8 @@ ValidationResult Guardian::validate_tool_call(const std::string& tool_name,
         return {false, "Invalid session ID: " + session_id, {}, {}, {}};
     }
 
-    if (!policy_graph_.has_node(tool_name)) {
-        auto all_ids = policy_graph_.get_all_node_ids();
-        return {false, "Unknown tool: " + tool_name, all_ids, {}, {}};
-    }
-
     auto sequence = session_mgr_->get_sequence(session_id);
-
-    // Validate (placeholder until Dev C merge)
-    // return validator_->validate(tool_name, sequence);
-    return {true, "Approved (validator not yet linked)", {}, {}, {}};
+    return validator_->validate(tool_name, sequence);
 }
 
 // ============================================================================
@@ -165,7 +167,9 @@ std::string Guardian::create_session() {
     if (!initialized_) {
         throw std::runtime_error("Guardian::create_session: not initialized");
     }
-    return session_mgr_->create_session();
+    auto id = session_mgr_->create_session();
+    Logger::instance().log(LogLevel::INFO, "Guardian", "Session created: " + id);
+    return id;
 }
 
 void Guardian::end_session(const std::string& session_id) {
@@ -173,6 +177,7 @@ void Guardian::end_session(const std::string& session_id) {
         throw std::runtime_error("Guardian::end_session: not initialized");
     }
     session_mgr_->end_session(session_id);
+    Logger::instance().log(LogLevel::INFO, "Guardian", "Session ended: " + session_id);
 }
 
 // ============================================================================
@@ -186,8 +191,8 @@ void Guardian::load_tool_module(const std::string& tool_name,
     }
     // TODO: enable after Dev B merge
     // sandbox_mgr_->load_module(tool_name, wasm_path);
-    std::cerr << "[INFO] load_tool_module('" << tool_name
-              << "', '" << wasm_path << "') — sandbox not yet linked" << std::endl;
+    Logger::instance().log(LogLevel::INFO, "Guardian",
+        "load_tool_module('" + tool_name + "', '" + wasm_path + "') — sandbox pending");
 }
 
 void Guardian::set_default_sandbox_config(const SandboxConfig& config) {
@@ -201,32 +206,27 @@ void Guardian::set_default_sandbox_config(const SandboxConfig& config) {
 // ============================================================================
 
 std::string Guardian::visualize_policy(const std::string& format) const {
-    if (format == "dot" || format == "DOT") {
-        return policy_graph_.to_dot();
-    }
+    VisualizationOptions opts;
     if (format == "json") {
-        return policy_graph_.to_json();
+        opts.output_format = VisualizationOptions::JSON;
+    } else {
+        opts.output_format = VisualizationOptions::DOT;
     }
-    // TODO: enable after Dev D merge
-    // if (viz_) {
-    //     VisualizationOptions opts;
-    //     opts.output_format = (format == "ascii") ?
-    //         VisualizationOptions::ASCII : VisualizationOptions::DOT;
-    //     return viz_->render_graph(policy_graph_, opts);
-    // }
-    return policy_graph_.to_dot(); // fallback
+    return viz_->render_graph(policy_graph_, opts);
 }
 
 std::string Guardian::visualize_session(const std::string& session_id,
-                                          const std::string& /*format*/) const {
+                                          const std::string& format) const {
     if (!session_mgr_->has_session(session_id)) {
         throw std::invalid_argument(
             "Guardian::visualize_session: unknown session " + session_id);
     }
-    // TODO: enable after Dev D merge
-    // auto sequence = session_mgr_->get_sequence(session_id);
-    // return viz_->render_sequence(policy_graph_, sequence, {});
-    return "Session visualization pending Dev D merge";
+    auto sequence = session_mgr_->get_sequence(session_id);
+    VisualizationOptions opts;
+    if (format == "json") {
+        opts.output_format = VisualizationOptions::JSON;
+    }
+    return viz_->render_sequence(policy_graph_, sequence, opts);
 }
 
 // ============================================================================
@@ -235,6 +235,9 @@ std::string Guardian::visualize_session(const std::string& session_id,
 
 void Guardian::update_config(const Config& config) {
     config_ = config;
+    if (validator_) {
+        validator_->set_cycle_threshold(config.cycle_detection.default_threshold);
+    }
 }
 
 Config Guardian::get_config() const {

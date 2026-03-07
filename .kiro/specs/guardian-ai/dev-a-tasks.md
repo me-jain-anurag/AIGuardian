@@ -22,17 +22,17 @@ git checkout -b feature/policy-graph
 ## Phase 1 — Core Foundation
 
 ### Task 1: Project Setup and Build System
-- [ ] 1.1 Create `.gitignore` for C++ CMake project (already created in repo)
-- [ ] 1.2 Create root `CMakeLists.txt` with C++17 standard
-- [ ] 1.3 Configure dependencies: nlohmann_json (required), WasmEdge SDK (**optional** — use `find_package(QUIET)` so Windows builds don't fail), Graphviz (optional)
-- [ ] 1.4 Create directory structure: `include/guardian/`, `src/`, `cli/`, `tests/`, `policies/`, `examples/`, `wasm_tools/`
-- [ ] 1.5 Create `include/guardian/types.hpp` with all shared enums and structs (THE SHARED CONTRACT)
-- [ ] 1.6 Create empty header files with include guards for all components
-- [ ] 1.7 Configure test framework (Catch2 + RapidCheck via FetchContent)
-- [ ] 1.8 Commit `.gitattributes`, `.editorconfig`, `.gitignore`
-- [ ] 1.9 Add cross-platform CMake flags: `if(MSVC) /W4 /permissive-` else `-Wall -Wextra -Wpedantic`
-- [ ] 1.10 Add `#ifdef HAVE_WASMEDGE` guard so Windows builds compile without WasmEdge
-- [ ] 1.11 Handle `std::filesystem` linking for older GCC (`target_link_libraries(... stdc++fs)`)
+- [x] 1.1 Create `.gitignore` for C++ CMake project (already created in repo)
+- [x] 1.2 Create root `CMakeLists.txt` with C++17 standard
+- [x] 1.3 Configure dependencies: nlohmann_json (required), WasmEdge SDK (**optional** — use `find_package(QUIET)` so Windows builds don't fail), Graphviz (optional)
+- [x] 1.4 Create directory structure: `include/guardian/`, `src/`, `cli/`, `tests/`, `policies/`, `examples/`, `wasm_tools/`
+- [x] 1.5 Create `include/guardian/types.hpp` with all shared enums and structs (THE SHARED CONTRACT)
+- [x] 1.6 Create empty header files with include guards for all components
+- [x] 1.7 Configure test framework (Catch2 + RapidCheck via FetchContent)
+- [x] 1.8 Commit `.gitattributes`, `.editorconfig`, `.gitignore`
+- [x] 1.9 Add cross-platform CMake flags: `if(MSVC) /W4 /permissive-` else `-Wall -Wextra -Wpedantic`
+- [x] 1.10 Add `#ifdef HAVE_WASMEDGE` guard so Windows builds compile without WasmEdge
+- [x] 1.11 Handle `std::filesystem` linking for older GCC (`target_link_libraries(... stdc++fs)`)
 - _Requirements: 16.1, 16.6_
 - _Cross-platform: See `collaboration-plan.md` Section 9 (CMake patterns)_
 
@@ -61,11 +61,11 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 2: Policy Graph Core Data Structures (tasks.md 2.1)
-- [ ] 2.1 Implement `PolicyNode` struct with id, tool_name, risk_level, node_type, metadata, wasm_module, sandbox_config
-- [ ] 2.2 Implement `PolicyEdge` struct with from_node_id, to_node_id, conditions, metadata
-- [ ] 2.3 Implement `PolicyGraph` class with adjacency list (`std::unordered_map<string, vector<PolicyEdge>>`)
-- [ ] 2.4 Implement `add_node()`, `add_edge()`, `remove_node()`, `remove_edge()`
-- [ ] 2.5 Implement `has_node()`, `has_edge()`, `get_neighbors()`, `get_node()`
+- [x] 2.1 Implement `PolicyNode` struct with id, tool_name, risk_level, node_type, metadata, wasm_module, sandbox_config
+- [x] 2.2 Implement `PolicyEdge` struct with from_node_id, to_node_id, conditions, metadata
+- [x] 2.3 Implement `PolicyGraph` class with adjacency list (`std::unordered_map<string, vector<PolicyEdge>>`)
+- [x] 2.4 Implement `add_node()`, `add_edge()`, `remove_node()`, `remove_edge()`
+- [x] 2.5 Implement `has_node()`, `has_edge()`, `get_neighbors()`, `get_node()`
 - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
 > **📌 COMMIT 2 — Policy graph core**
@@ -79,11 +79,11 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 3: Policy Graph Serialization (tasks.md 2.3, 2.4)
-- [ ] 3.1 Implement `to_json()` using nlohmann_json — include nodes, edges, sandbox configs, metadata
-- [ ] 3.2 Implement `from_json()` with descriptive error messages (line/column info)
-- [ ] 3.3 Implement `to_dot()` for Graphviz compatibility — include node types, risk levels
-- [ ] 3.4 Implement `from_dot()` with DOT parsing and error handling
-- [ ] 3.5 Handle node types, sandbox configs, and metadata in both formats
+- [x] 3.1 Implement `to_json()` using nlohmann_json — include nodes, edges, sandbox configs, metadata
+- [x] 3.2 Implement `from_json()` with descriptive error messages (line/column info)
+- [x] 3.3 Implement `to_dot()` for Graphviz compatibility — include node types, risk levels
+- [x] 3.4 Implement `from_dot()` with DOT parsing and error handling
+- [x] 3.5 Handle node types, sandbox configs, and metadata in both formats
 - _Requirements: 1.7, 1.8, 1.9, 10.1, 10.2, 10.3, 10.7_
 
 > **📌 COMMIT 3 — Serialization**
@@ -97,11 +97,11 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 4: Configuration Management (tasks.md 10.1–10.2)
-- [ ] 4.1 Create `Config` struct with cycle_detection, sandbox, performance, logging, policy sections
-- [ ] 4.2 Implement `load_config()` from JSON file with validation
-- [ ] 4.3 Define safe default values for all settings
-- [ ] 4.4 Apply safe defaults for invalid/missing values, log warnings
-- [ ] 4.5 Implement config serialization round-trip
+- [x] 4.1 Create `Config` struct with cycle_detection, sandbox, performance, logging, policy sections
+- [x] 4.2 Implement `load_config()` from JSON file with validation
+- [x] 4.3 Define safe default values for all settings
+- [x] 4.4 Apply safe defaults for invalid/missing values, log warnings
+- [x] 4.5 Implement config serialization round-trip
 - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7_
 
 > **📌 COMMIT 4 — Config management**
@@ -113,12 +113,12 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 5: Policy Graph Tests (tasks.md 2.2, 2.5, 2.6, 10.3–10.4)
-- [ ] 5.1 Unit tests: empty graph, node addition, edge addition, error handling
-- [ ] 5.2 Unit tests: JSON parsing with malformed input, DOT parsing with syntax errors
-- [ ] 5.3 Property tests: node addition, edge addition, metadata preservation
-- [ ] 5.4 Property test: JSON serialization round-trip
-- [ ] 5.5 Property test: DOT serialization round-trip
-- [ ] 5.6 Unit tests: config loading, defaults, round-trip
+- [x] 5.1 Unit tests: empty graph, node addition, edge addition, error handling
+- [x] 5.2 Unit tests: JSON parsing with malformed input, DOT parsing with syntax errors
+- [x] 5.3 Property tests: node addition, edge addition, metadata preservation
+- [x] 5.4 Property test: JSON serialization round-trip
+- [x] 5.5 Property test: DOT serialization round-trip
+- [x] 5.6 Unit tests: config loading, defaults, round-trip
 - _Requirements: 1.2, 1.3, 1.9, 10.3, 10.6, 10.7, 15.1, 15.6, 15.7_
 
 > **📌 COMMIT 5 — Phase 1 tests**
@@ -153,15 +153,15 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 6: Guardian API Class (tasks.md 12.1–12.5)
-- [ ] 6.1 Implement `Guardian` constructor accepting policy file path and wasm_tools_dir
-- [ ] 6.2 Initialize all components: PolicyGraph, PolicyValidator, SessionManager, SandboxManager, VisualizationEngine
-- [ ] 6.3 Implement `execute_tool()` — validate then sandbox execute
-- [ ] 6.4 Implement `validate_tool_call()` — policy-only validation
-- [ ] 6.5 Implement `create_session()` and `end_session()` — delegate to SessionManager
-- [ ] 6.6 Implement `load_tool_module()` and `set_default_sandbox_config()`
-- [ ] 6.7 Implement `visualize_policy()` and `visualize_session()`
-- [ ] 6.8 Implement `update_config()` and `get_config()`
-- [ ] 6.9 Error handling: throw on construction errors, return codes on runtime errors
+- [x] 6.1 Implement `Guardian` constructor accepting policy file path and wasm_tools_dir
+- [x] 6.2 Initialize all components: PolicyGraph, PolicyValidator, SessionManager, ~~SandboxManager~~(Dev B), VisualizationEngine
+- [x] 6.3 Implement `execute_tool()` — validate then sandbox execute
+- [x] 6.4 Implement `validate_tool_call()` — policy-only validation
+- [x] 6.5 Implement `create_session()` and `end_session()` — delegate to SessionManager
+- [x] 6.6 Implement `load_tool_module()` and `set_default_sandbox_config()`
+- [x] 6.7 Implement `visualize_policy()` and `visualize_session()`
+- [x] 6.8 Implement `update_config()` and `get_config()`
+- [x] 6.9 Error handling: throw on construction errors, return codes on runtime errors
 - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.8, 16.9_
 
 > **📌 COMMIT 6 — Guardian API core**
@@ -175,12 +175,12 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 7: Guardian API Tests (tasks.md 12.6–12.7)
-- [ ] 7.1 Test initialization with valid/invalid policy
-- [ ] 7.2 Test `execute_tool()` end-to-end flow
-- [ ] 7.3 Test `validate_tool_call()` without execution
-- [ ] 7.4 Test session management through API
-- [ ] 7.5 Test error handling for API misuse
-- [ ] 7.6 Property tests: initialization, result structure, error messages
+- [x] 7.1 Test initialization with valid/invalid policy
+- [x] 7.2 Test `execute_tool()` end-to-end flow
+- [x] 7.3 Test `validate_tool_call()` without execution
+- [x] 7.4 Test session management through API
+- [x] 7.5 Test error handling for API misuse
+- [x] 7.6 Property tests: initialization, result structure, error messages
 - _Requirements: 16.3, 16.4, 16.5, 16.8_
 
 > **📌 COMMIT 7 — Guardian API tests**
@@ -190,9 +190,9 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 8: Integration Examples (tasks.md 17.1–17.2)
-- [ ] 8.1 Create `examples/basic_integration.cpp` — Guardian init, validate, session mgmt
-- [ ] 8.2 Create `examples/custom_policy.cpp` — programmatic graph creation, serialization
-- [ ] 8.3 Verify examples compile and run
+- [x] 8.1 Create `examples/basic_integration.cpp` — Guardian init, validate, session mgmt
+- [x] 8.2 Create `examples/custom_policy.cpp` — programmatic graph creation, serialization
+- [x] 8.3 Verify examples compile and run
 - _Requirements: 18.1, 18.4, 18.6_
 
 > **📌 COMMIT 8 — Examples**
@@ -223,9 +223,9 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 9: Performance Optimization for Policy Graph (tasks.md 19.1)
-- [ ] 9.1 Add validation result caching with LRU eviction (coordinate with Dev C for cache key design)
-- [ ] 9.2 Implement string interning for tool names in PolicyGraph
-- [ ] 9.3 Optimize graph traversal algorithms (adjacency list iteration)
+- [x] 9.1 Add validation result caching with LRU eviction (coordinate with Dev C for cache key design)
+- [x] 9.2 Implement string interning for tool names in PolicyGraph
+- [x] 9.3 Optimize graph traversal algorithms (adjacency list iteration)
 - [ ] 9.4 Add Wasm module caching improvements (coordinate with Dev B)
 - _Requirements: 12.1, 12.2, 12.3_
 
@@ -236,11 +236,11 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 10: Performance Benchmarks (tasks.md 19.2–19.3)
-- [ ] 10.1 Create `tests/performance/bench_policy_graph.cpp` — benchmark graph operations
-- [ ] 10.2 Benchmark policy validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
-- [ ] 10.3 Benchmark throughput (>100 validations/second)
+- [x] 10.1 Create `tests/performance/bench_policy_graph.cpp` — benchmark graph operations
+- [x] 10.2 Benchmark policy validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
+- [x] 10.3 Benchmark throughput (>100 validations/second)
 - [ ] 10.4 Benchmark memory usage (<100MB for 1000 tool calls)
-- [ ] 10.5 Test with graphs up to 200 nodes
+- [x] 10.5 Test with graphs up to 200 nodes
 - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
 > **📌 COMMIT 10 — Performance benchmarks**

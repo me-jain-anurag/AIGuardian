@@ -64,6 +64,11 @@ add_library(guardian
     src/policy_graph.cpp
     src/config.cpp
     src/guardian.cpp
+    src/session_manager.cpp
+    src/policy_validator.cpp
+    src/tool_interceptor.cpp
+    src/visualization.cpp
+    src/logger.cpp
     # Dev B adds:
     # src/sandbox_manager.cpp
     # Dev C adds:
@@ -130,6 +135,21 @@ if(GUARDIAN_BUILD_TESTS)
     target_link_libraries(test_policy_validator PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
     add_test(NAME test_policy_validator COMMAND test_policy_validator)
 endif()
+
+# ============================================================================
+# Examples (Phase 2 — Dev A)
+# ============================================================================
+add_executable(example_basic examples/basic_integration.cpp)
+target_link_libraries(example_basic PRIVATE guardian)
+
+add_executable(example_custom examples/custom_policy.cpp)
+target_link_libraries(example_custom PRIVATE guardian)
+
+add_executable(example_concurrent examples/concurrent_sessions.cpp)
+target_link_libraries(example_concurrent PRIVATE guardian)
+
+add_executable(example_sandbox examples/sandbox_config.cpp)
+target_link_libraries(example_sandbox PRIVATE guardian)
 
 # ============================================================================
 # CLI Demo Tool (Phase 2 — Dev D)

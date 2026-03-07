@@ -26,7 +26,7 @@ public:
 
     // Main validation — coordinates all checks, with LRU caching
     ValidationResult validate(const std::string& tool_name,
-                               const std::vector<ToolCall>& action_sequence);
+                               const std::vector<ToolCall>& action_sequence) const;
 
     // Individual checks
     bool check_transition(const std::string& from_tool,

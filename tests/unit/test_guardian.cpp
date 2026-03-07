@@ -207,3 +207,53 @@ TEST_CASE("Guardian config round-trip", "[guardian][config]") {
 
     fs::remove(path);
 }
+
+// ============================================================================
+// Property Tests (RapidCheck)
+// ============================================================================
+
+#include <rapidcheck.h>
+
+TEST_CASE("Guardian Property Tests: initialization robustness", "[guardian][property]") {
+    // 7.6 Property tests: initialization, result structure, error messages
+    rc::check("Guardian throws std::runtime_error on non-existent policy paths",
+        [](const std::string& random_path) {
+            // Filter out paths that might actually exist or throw different exceptions
+            // due to null bytes or filesystem limits
+            if (random_path.empty() || random_path.find('\0') != std::string::npos ||
+                random_path.size() > 200) {
+                return;
+            }
+            if (fs::exists(random_path)) return;
+
+            try {
+                Guardian g(random_path);
+                RC_FAIL("Should have thrown");
+            } catch (const std::runtime_error& e) {
+                RC_ASSERT(std::string(e.what()).find("Guardian: policy file not found") != std::string::npos);
+            }
+        });
+
+    rc::check("ValidationResult structure always valid for unknown tools",
+        [](const std::string& random_tool) {
+            auto path = write_temp_policy();
+            Guardian g(path);
+            auto sid = g.create_session();
+
+            // We know our temp graph has "read_accounts", "generate_report", "send_email"
+            if (random_tool == "read_accounts" || random_tool == "generate_report" ||
+                random_tool == "send_email") {
+                fs::remove(path);
+                return;
+            }
+
+            auto result = g.validate_tool_call(random_tool, sid);
+            RC_ASSERT(!result.approved);
+            RC_ASSERT(result.reason.find("Unknown tool") != std::string::npos);
+            // Must provide alternatives (since graph is not empty)
+            RC_ASSERT(!result.suggested_alternatives.empty());
+
+            g.end_session(sid);
+            fs::remove(path);
+        });
+}
