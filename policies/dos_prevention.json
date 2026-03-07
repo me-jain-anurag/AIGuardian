@@ -1,0 +1,50 @@
+{
+    "nodes": [
+        {
+            "id": "search_database",
+            "tool_name": "search_database",
+            "risk_level": "HIGH",
+            "node_type": "SENSITIVE_SOURCE",
+            "sandbox_config": {
+                "memory_limit_mb": 256,
+                "timeout_ms": 10000,
+                "network_access": true,
+                "allowed_paths": []
+            }
+        },
+        {
+            "id": "infinite_loop_tool",
+            "tool_name": "infinite_loop_tool",
+            "risk_level": "CRITICAL",
+            "node_type": "DATA_PROCESSOR",
+            "sandbox_config": {
+                "memory_limit_mb": 64,
+                "timeout_ms": 1000,
+                "network_access": false,
+                "allowed_paths": []
+            }
+        },
+        {
+            "id": "memory_hog",
+            "tool_name": "memory_hog",
+            "risk_level": "CRITICAL",
+            "node_type": "DATA_PROCESSOR",
+            "sandbox_config": {
+                "memory_limit_mb": 10,
+                "timeout_ms": 5000,
+                "network_access": false,
+                "allowed_paths": []
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "search_database",
+            "to": "infinite_loop_tool"
+        },
+        {
+            "from": "search_database",
+            "to": "memory_hog"
+        }
+    ]
+}
