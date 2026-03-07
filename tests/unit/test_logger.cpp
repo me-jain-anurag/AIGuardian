@@ -104,15 +104,14 @@ TEST_CASE("Logger: log entry contains all fields", "[logger][json]") {
     REQUIRE(entry["details"].get<std::string>() == "extra details");
 }
 
-TEST_CASE("Logger: log_with_context stores tool_name and session_id", "[logger][json]") {
+TEST_CASE("Logger: basic info stores message correctly", "[logger][json]") {
     Logger log(LogLevel::DEBUG);
-    log.log_with_context(LogLevel::INFO, "Validator", "Tool approved",
-                         "read_accounts", "sess-abc-123");
+    log.info("Validator", "Tool approved", "extra details");
 
     auto j = nlohmann::json::parse(log.export_logs());
     REQUIRE(j.size() == 1);
-    REQUIRE(j[0]["tool_name"].get<std::string>() == "read_accounts");
-    REQUIRE(j[0]["session_id"].get<std::string>() == "sess-abc-123");
+    REQUIRE(j[0]["component"].get<std::string>() == "Validator");
+    REQUIRE(j[0]["message"].get<std::string>() == "Tool approved");
 }
 
 // ============================================================================

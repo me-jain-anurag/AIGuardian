@@ -1,5 +1,5 @@
 // src/session_manager.cpp
-// Owner: Dev C (stub implementation by Dev A for integration)
+// Owner: Dev C
 // Session lifecycle management
 #include "guardian/session_manager.hpp"
 
@@ -8,12 +8,9 @@
 #include <iomanip>
 #include <chrono>
 #include <stdexcept>
+#include <fstream>
 
 namespace guardian {
-
-// ============================================================================
-// UUID-like session ID generator
-// ============================================================================
 
 static std::string generate_session_id() {
     static std::mt19937 rng(
@@ -31,14 +28,15 @@ static std::string generate_session_id() {
     return oss.str();
 }
 
-// ============================================================================
-// SessionManager Implementation
-// ============================================================================
-
-// Provide the map missing from the CPP file
-std::map<std::string, Session> sessions_;
+SessionManager::SessionManager(uint32_t timeout_seconds, uint32_t max_sessions)
+    : timeout_seconds_(timeout_seconds), max_sessions_(max_sessions) {}
 
 std::string SessionManager::create_session() {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    cleanup_expired_sessions();
+    if (max_sessions_ > 0 && sessions_.size() >= max_sessions_) {
+        throw std::runtime_error("Max sessions reached");
+    }
     std::string id = generate_session_id();
     Session session;
     session.session_id = id;
@@ -49,47 +47,90 @@ std::string SessionManager::create_session() {
 }
 
 void SessionManager::end_session(const std::string& session_id) {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     auto it = sessions_.find(session_id);
     if (it == sessions_.end()) {
-        throw std::invalid_argument(
-            "SessionManager::end_session: unknown session " + session_id);
+        throw std::runtime_error("SessionManager::end_session: unknown session");
     }
-    // No 'active' field natively, just remove from map for stub
     sessions_.erase(it);
 }
 
 bool SessionManager::has_session(const std::string& session_id) const {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     auto it = sessions_.find(session_id);
-    return it != sessions_.end();
+    if (it == sessions_.end()) return false;
+    if (is_expired(it->second)) return false;
+    return true;
 }
 
-std::vector<ToolCall> SessionManager::get_sequence(
-    const std::string& session_id) const {
+std::vector<ToolCall> SessionManager::get_sequence(const std::string& session_id) const {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     auto it = sessions_.find(session_id);
-    if (it == sessions_.end()) {
+    if (it == sessions_.end() || is_expired(it->second)) {
         return {};
     }
     return it->second.action_sequence;
 }
 
-void SessionManager::append_tool_call(const std::string& session_id,
-                                        const ToolCall& call) {
+void SessionManager::append_tool_call(const std::string& session_id, const ToolCall& call) {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     auto it = sessions_.find(session_id);
-    if (it == sessions_.end()) {
-        throw std::invalid_argument(
-            "SessionManager::append_tool_call: unknown session " + session_id);
+    if (it == sessions_.end() || is_expired(it->second)) {
+        throw std::runtime_error("SessionManager::append_tool_call: unknown or expired session");
     }
     it->second.action_sequence.push_back(call);
     it->second.last_activity = std::chrono::system_clock::now();
 }
-// Helper removed
+
+void SessionManager::persist_session(const std::string& session_id, const std::string& output_path) const {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    auto it = sessions_.find(session_id);
+    if (it == sessions_.end()) {
+        throw std::runtime_error("Unknown session");
+    }
+    std::ofstream ofs(output_path);
+    ofs << "{\n  \"session_id\": \"" << session_id << "\",\n  \"action_sequence\": [\n";
+    for(size_t i=0; i<it->second.action_sequence.size(); ++i) {
+        ofs << "    {\"tool_name\": \"" << it->second.action_sequence[i].tool_name << "\"}";
+        if(i + 1 < it->second.action_sequence.size()) ofs << ",\n";
+    }
+    ofs << "\n  ]\n}";
+}
 
 std::vector<std::string> SessionManager::get_all_sessions() const {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     std::vector<std::string> ids;
     for (const auto& [id, session] : sessions_) {
-        ids.push_back(id);
+        if (!is_expired(session)) ids.push_back(id);
     }
     return ids;
+}
+
+size_t SessionManager::active_session_count() const {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    size_t count = 0;
+    for (const auto& [id, session] : sessions_) {
+        if (!is_expired(session)) count++;
+    }
+    return count;
+}
+
+void SessionManager::cleanup_expired_sessions() {
+    if (timeout_seconds_ == 0) return;
+    for (auto it = sessions_.begin(); it != sessions_.end(); ) {
+        if (is_expired(it->second)) {
+            it = sessions_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+bool SessionManager::is_expired(const Session& session) const {
+    if (timeout_seconds_ == 0) return false;
+    auto now = std::chrono::system_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - session.last_activity).count();
+    return elapsed >= timeout_seconds_;
 }
 
 } // namespace guardian
