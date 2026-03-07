@@ -42,6 +42,9 @@ public:
     // Suggest valid next tools from current position
     std::vector<std::string> get_alternatives(const std::string& from_tool) const;
 
+    // Configuration
+    void set_cycle_threshold(size_t threshold);
+
 private:
     /// Generate cache key from tool name + last N tools in sequence
     static std::string generate_cache_key(

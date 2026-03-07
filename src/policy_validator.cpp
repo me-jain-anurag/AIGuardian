@@ -327,4 +327,8 @@ ValidationResult PolicyValidator::validate(
     return result;
 }
 
+void PolicyValidator::set_cycle_threshold(size_t threshold) {
+    config_.cycle_detection.default_threshold = threshold;
+}
+
 } // namespace guardian

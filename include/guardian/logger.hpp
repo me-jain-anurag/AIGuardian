@@ -27,10 +27,13 @@ struct LogEntry {
 
 class Logger {
 public:
+    static Logger& instance();
+
     explicit Logger(LogLevel min_level = LogLevel::INFO);
     ~Logger() = default;
 
     // Logging methods
+    void log(LogLevel level, const std::string& component, const std::string& message);
     void debug(const std::string& component, const std::string& message,
                const std::string& details = "");
     void info(const std::string& component, const std::string& message,
@@ -48,6 +51,13 @@ public:
     // Export
     std::string export_logs() const;
     std::string export_logs(LogLevel min_level) const;
+
+    void set_format(const std::string& format);
+    static std::string level_to_string(LogLevel level);
+
+private:
+    LogLevel min_level_ = LogLevel::INFO;
+    std::string format_ = "text";
 };
 
 } // namespace guardian

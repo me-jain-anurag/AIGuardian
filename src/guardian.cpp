@@ -24,7 +24,7 @@ namespace guardian {
 // ============================================================================
 
 Guardian::Guardian(const std::string& policy_file_path,
-                   const std::string& wasm_tools_dir,
+                   const std::string& /*wasm_tools_dir*/,
                    const std::string& config_file_path) {
     // 1. Load config (safe defaults if file missing)
     if (!config_file_path.empty()) {
@@ -226,7 +226,7 @@ std::string Guardian::visualize_session(const std::string& session_id,
     if (format == "json") {
         opts.output_format = VisualizationOptions::JSON;
     }
-    return viz_->render_sequence(policy_graph_, sequence, opts);
+    return viz_->render_sequence(policy_graph_, sequence, {}, opts);
 }
 
 // ============================================================================

@@ -14,7 +14,7 @@ namespace guardian {
 class PolicyGraph;
 
 struct VisualizationOptions {
-    enum Format { DOT, SVG, PNG, ASCII };
+    enum Format { DOT, SVG, PNG, ASCII, JSON };
     Format output_format = DOT;
     bool highlight_violations = true;
     bool show_metadata = true;
