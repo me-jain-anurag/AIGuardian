@@ -223,9 +223,9 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 9: Performance Optimization for Policy Graph (tasks.md 19.1)
-- [ ] 9.1 Add validation result caching with LRU eviction (coordinate with Dev C for cache key design)
-- [ ] 9.2 Implement string interning for tool names in PolicyGraph
-- [ ] 9.3 Optimize graph traversal algorithms (adjacency list iteration)
+- [x] 9.1 Add validation result caching with LRU eviction (coordinate with Dev C for cache key design)
+- [x] 9.2 Implement string interning for tool names in PolicyGraph
+- [x] 9.3 Optimize graph traversal algorithms (adjacency list iteration)
 - [ ] 9.4 Add Wasm module caching improvements (coordinate with Dev B)
 - _Requirements: 12.1, 12.2, 12.3_
 
@@ -236,11 +236,11 @@ git checkout -b feature/policy-graph
 > ```
 
 ### Task 10: Performance Benchmarks (tasks.md 19.2–19.3)
-- [ ] 10.1 Create `tests/performance/bench_policy_graph.cpp` — benchmark graph operations
-- [ ] 10.2 Benchmark policy validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
-- [ ] 10.3 Benchmark throughput (>100 validations/second)
+- [x] 10.1 Create `tests/performance/bench_policy_graph.cpp` — benchmark graph operations
+- [x] 10.2 Benchmark policy validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
+- [x] 10.3 Benchmark throughput (>100 validations/second)
 - [ ] 10.4 Benchmark memory usage (<100MB for 1000 tool calls)
-- [ ] 10.5 Test with graphs up to 200 nodes
+- [x] 10.5 Test with graphs up to 200 nodes
 - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
 > **📌 COMMIT 10 — Performance benchmarks**
