@@ -26,6 +26,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# Keep test executable paths stable across single-config and multi-config generators.
+foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${cfg} ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${cfg} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${cfg} ${CMAKE_BINARY_DIR}/lib)
+endforeach()
+
 # ============================================================================
 # Dependencies
 # ============================================================================
@@ -86,7 +93,7 @@ add_library(guardian
     # Dev C adds:
     src/session_manager.cpp
     src/policy_validator.cpp
-    # src/tool_interceptor.cpp   (Phase 2)
+    src/tool_interceptor.cpp   # (Phase 2)
     # Dev D adds:
     src/visualization.cpp
     src/logger.cpp
@@ -175,13 +182,36 @@ if(GUARDIAN_BUILD_TESTS)
     # Dev D: Performance Benchmarks
     add_executable(bench_visualization tests/performance/bench_visualization.cpp)
     target_link_libraries(bench_visualization PRIVATE guardian Catch2::Catch2WithMain)
-    # Benchmarks are typically run manually or with specific flags, but we can add as a test too
     add_test(NAME bench_visualization COMMAND bench_visualization)
 
     # Dev B: Sandbox performance benchmarks
     add_executable(bench_sandbox tests/performance/bench_sandbox.cpp)
     target_link_libraries(bench_sandbox PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME bench_sandbox COMMAND bench_sandbox)
+
+    # Dev C — Tool Interceptor tests
+    add_executable(test_tool_interceptor tests/unit/test_tool_interceptor.cpp)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
+        # Workaround: GNU ld on Windows can fail for complex C++ executables. Use LLD if available.
+        target_compile_options(test_tool_interceptor PRIVATE -g0)
+    endif()
+    target_link_libraries(test_tool_interceptor PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_tool_interceptor COMMAND test_tool_interceptor)
+    
+    # Dev C — Integration Demos (Standalone, no Catch2 to avoid GNU linker bugs)
+    add_executable(test_integration_demos tests/integration/test_integration_demos.cpp)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
+        target_compile_options(test_integration_demos PRIVATE -g0)
+    endif()
+    target_link_libraries(test_integration_demos PRIVATE guardian)
+    add_test(NAME test_integration_demos COMMAND test_integration_demos)
+
+    # Dev C — Concurrent Sessions Example
+    add_executable(concurrent_sessions examples/concurrent_sessions.cpp)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
+        target_compile_options(concurrent_sessions PRIVATE -g0)
+    endif()
+    target_link_libraries(concurrent_sessions PRIVATE guardian)
 endif()
 
 # ============================================================================
