@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace guardian {
 
@@ -51,13 +52,17 @@ public:
     // Export
     std::string export_logs() const;
     std::string export_logs(LogLevel min_level) const;
-    void clear() { entries_.clear(); }
+    void clear() {
+        std::lock_guard<std::mutex> lk(mutex_);
+        entries_.clear();
+    }
 
     private:
     LogLevel min_level_;
     std::vector<LogEntry> entries_;
     std::string output_file_;
     bool json_format_ = false;
+    mutable std::mutex mutex_;
 };
 
 } // namespace guardian
