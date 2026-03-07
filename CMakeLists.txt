@@ -46,19 +46,48 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
-# WasmEdge SDK (optional — Linux only for now)
+# WasmEdge SDK (optional — Linux/macOS with GCC/Clang, or Windows with MSVC)
 # The install.sh script doesn't reliably create CMake config files. Look for it directly.
-find_path(WasmEdge_INCLUDE_DIRS wasmedge/wasmedge.h PATHS "$ENV{HOME}/.wasmedge/include" "/usr/local/include" "/usr/include")
-find_library(WasmEdge_LIBRARIES wasmedge PATHS "$ENV{HOME}/.wasmedge/lib" "/usr/local/lib" "/usr/lib")
-
-if(WasmEdge_INCLUDE_DIRS AND WasmEdge_LIBRARIES)
-    set(WasmEdge_FOUND TRUE)
+#
+# NOTE: WasmEdge's Windows distribution is MSVC-compiled. MinGW (GCC on Windows)
+# cannot link against MSVC .lib files due to ABI mismatch — skip in that case.
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(STATUS "WasmEdge skipped — MinGW cannot link MSVC-built wasmedge.lib (ABI mismatch). Use MSVC or Linux to enable WasmEdge.")
+    set(WasmEdge_FOUND FALSE)
+else()
+    find_path(WasmEdge_INCLUDE_DIRS wasmedge/wasmedge.h
+        PATHS
+            "$ENV{HOME}/.wasmedge/include"
+            "/usr/local/include"
+            "/usr/include"
+            "C:/Program Files/WasmEdge/include"
+            "$ENV{WASMEDGE_DIR}/include"
+    )
+    find_library(WasmEdge_LIBRARIES
+        NAMES wasmedge wasmedge.lib
+        PATHS
+            "$ENV{HOME}/.wasmedge/lib"
+            "/usr/local/lib"
+            "/usr/lib"
+            "C:/Program Files/WasmEdge/lib"
+            "$ENV{WASMEDGE_DIR}/lib"
+    )
+    if(WasmEdge_INCLUDE_DIRS AND WasmEdge_LIBRARIES)
+        set(WasmEdge_FOUND TRUE)
+    else()
+        set(WasmEdge_FOUND FALSE)
+    endif()
 endif()
+
 if(WasmEdge_FOUND)
-    message(STATUS "WasmEdge found natively")
+    message(STATUS "WasmEdge found: ${WasmEdge_LIBRARIES}")
     add_compile_definitions(HAVE_WASMEDGE)
-    # Give all targets access to the definition
     add_definitions(-DHAVE_WASMEDGE)
+    if(WIN32)
+        get_filename_component(WasmEdge_LIB_DIR "${WasmEdge_LIBRARIES}" DIRECTORY)
+        file(TO_CMAKE_PATH "${WasmEdge_LIB_DIR}/../bin" WasmEdge_BIN_DIR)
+        message(STATUS "WasmEdge bin dir (for DLL): ${WasmEdge_BIN_DIR}")
+    endif()
 else()
     message(STATUS "WasmEdge NOT found — sandbox will use MockRuntime only")
 endif()
@@ -112,9 +141,29 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
     target_link_libraries(guardian PUBLIC stdc++fs)
 endif()
 
+# On Windows+MinGW, statically link the C++ runtime to avoid DLL version mismatches
+# between UCRT64 (compiler) and MINGW64 (Git Bash PATH) toolchains at runtime.
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_options(guardian PUBLIC
+        -static-libgcc
+        -static-libstdc++
+        -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic
+    )
+endif()
+
 # Link WasmEdge if available
 if(WasmEdge_FOUND)
-    target_link_libraries(guardian PUBLIC wasmedge)
+    target_include_directories(guardian PUBLIC "${WasmEdge_INCLUDE_DIRS}")
+    target_link_libraries(guardian PUBLIC "${WasmEdge_LIBRARIES}")
+    if(WIN32)
+        # Copy wasmedge.dll next to the built executables so they can find it at runtime
+        add_custom_command(TARGET guardian POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${WasmEdge_BIN_DIR}/wasmedge.dll"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/wasmedge.dll"
+            COMMENT "Copying wasmedge.dll to output dir"
+        )
+    endif()
 endif()
 
 # ============================================================================
@@ -217,6 +266,14 @@ if(GUARDIAN_BUILD_TESTS)
     add_executable(bench_policy_graph tests/performance/bench_policy_graph.cpp)
     target_link_libraries(bench_policy_graph PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME bench_policy_graph COMMAND bench_policy_graph)
+
+    # Dev C: Validator + Session performance benchmarks (Phase 3 Task 15)
+    add_executable(bench_validator tests/performance/bench_validator.cpp)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND WIN32)
+        target_compile_options(bench_validator PRIVATE -g0)
+    endif()
+    target_link_libraries(bench_validator PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME bench_validator COMMAND bench_validator)
 endif()
 
 # ============================================================================

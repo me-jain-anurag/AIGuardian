@@ -57,7 +57,32 @@ class LRUCache {
 public:
     explicit LRUCache(size_t max_size = 1000) : max_size_(max_size) {}
 
+    // Custom copy: copy data under the source lock; destination gets its own fresh mutex
+    LRUCache(const LRUCache& other) {
+        std::lock_guard<std::mutex> lk(other.mutex_);
+        max_size_  = other.max_size_;
+        cache_list_ = other.cache_list_;
+        // Rebuild map iterators from the copied list
+        cache_map_.clear();
+        for (auto it = cache_list_.begin(); it != cache_list_.end(); ++it) {
+            cache_map_[it->first] = it;
+        }
+    }
+    LRUCache& operator=(const LRUCache& other) {
+        if (this == &other) return *this;
+        std::lock_guard<std::mutex> lk_other(other.mutex_);
+        std::lock_guard<std::mutex> lk_self(mutex_);
+        max_size_ = other.max_size_;
+        cache_list_ = other.cache_list_;
+        cache_map_.clear();
+        for (auto it = cache_list_.begin(); it != cache_list_.end(); ++it) {
+            cache_map_[it->first] = it;
+        }
+        return *this;
+    }
+
     std::optional<Value> get(const Key& key) {
+        std::lock_guard<std::mutex> lk(mutex_);
         auto it = cache_map_.find(key);
         if (it == cache_map_.end()) return std::nullopt;
         // Move to front (most recently used)
@@ -66,6 +91,7 @@ public:
     }
 
     void put(const Key& key, const Value& value) {
+        std::lock_guard<std::mutex> lk(mutex_);
         auto it = cache_map_.find(key);
         if (it != cache_map_.end()) {
             cache_list_.erase(it->second);
@@ -82,12 +108,20 @@ public:
         }
     }
 
-    void clear() { cache_map_.clear(); cache_list_.clear(); }
-    size_t size() const { return cache_map_.size(); }
+    void clear() {
+        std::lock_guard<std::mutex> lk(mutex_);
+        cache_map_.clear();
+        cache_list_.clear();
+    }
+    size_t size() const {
+        std::lock_guard<std::mutex> lk(mutex_);
+        return cache_map_.size();
+    }
     size_t capacity() const { return max_size_; }
 
 private:
     size_t max_size_;
+    mutable std::mutex mutex_;
     std::list<std::pair<Key, Value>> cache_list_;
     std::unordered_map<Key, typename std::list<std::pair<Key, Value>>::iterator> cache_map_;
 };

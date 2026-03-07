@@ -1,0 +1,11 @@
+# Minimum tool versions for AIGuardian
+# cmake is the only build-tool version pinned here; the make backend differs by platform.
+#   Linux  : make or ninja (system packages)
+#   Windows: mingw32-make (shipped with MSYS2 UCRT64 — see docs/WINDOWS_SETUP.md)
+
+cmake 3.16.0
+
+# Compiler requirements (not managed by asdf — install separately):
+#   GCC >= 9  (MSYS2 UCRT64 on Windows, system GCC on Linux)
+#   Clang >= 10  or  MSVC >= 2019 also supported
+#   C++ standard: C++17

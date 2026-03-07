@@ -262,10 +262,10 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 14: Validation Performance Optimization (tasks.md 19.1)
-- [ ] 14.1 Optimize validation caching — tune LRU cache size, profile cache hit rates
-- [ ] 14.2 Add memory pooling for ToolCall objects
-- [ ] 14.3 Profile and optimize cycle detection for long sequences (>1000 tool calls)
-- [ ] 14.4 Profile and optimize exfiltration detection for complex graphs (>100 nodes)
+- [x] 14.1 Optimize validation caching — tune LRU cache size, profile cache hit rates
+- [x] 14.2 Add memory pooling for ToolCall objects
+- [x] 14.3 Profile and optimize cycle detection for long sequences (>1000 tool calls)
+- [x] 14.4 Profile and optimize exfiltration detection for complex graphs (>100 nodes)
 - _Requirements: 12.1, 12.2, 12.3_
 
 > **📌 COMMIT 11 — Performance optimization**
@@ -275,11 +275,11 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 15: Validation Performance Tests (tasks.md 19.2–19.3)
-- [ ] 15.1 Create `tests/performance/bench_validator.cpp`
-- [ ] 15.2 Benchmark validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
-- [ ] 15.3 Benchmark throughput (>100 validations/second)
-- [ ] 15.4 Benchmark memory usage (<100MB for 1000 tool calls)
-- [ ] 15.5 Benchmark concurrent session performance (4+ threads)
+- [x] 15.1 Create `tests/performance/bench_validator.cpp`
+- [x] 15.2 Benchmark validation latency (<10ms for 50 nodes, <50ms for 200 nodes)
+- [x] 15.3 Benchmark throughput (>100 validations/second)
+- [x] 15.4 Benchmark memory usage (<100MB for 1000 tool calls)
+- [x] 15.5 Benchmark concurrent session performance (4+ threads)
 - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
 > **📌 COMMIT 12 — Performance benchmarks**
@@ -289,9 +289,9 @@ git checkout -b feature/validator-session
 > ```
 
 ### Task 16: Final Validation — Integration Tests (tasks.md 22.1–22.2)
-- [ ] 16.1 Run complete test suite: all unit + property + integration + performance tests
-- [ ] 16.2 Verify all 3 demo scenarios produce correct results
-- [ ] 16.3 Verify demos complete within 90 seconds each
+- [x] 16.1 Run complete test suite: all unit + property + integration + performance tests
+- [x] 16.2 Verify all 3 demo scenarios produce correct results
+- [x] 16.3 Verify demos complete within 90 seconds each
 - [ ] 16.4 Run concurrency stress test under Thread Sanitizer (if available)
 - _Requirements: 9.5, 10.5, 11.5, 17.10_
 
