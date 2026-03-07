@@ -238,7 +238,7 @@ TEST_CASE("SessionManager: concurrent access is thread-safe",
 
     // Append tool calls concurrently to different sessions
     for (int t = 0; t < NUM_THREADS; ++t) {
-        threads.emplace_back([&mgr, &all_ids, t]() {
+        threads.emplace_back([&mgr, &all_ids, t, OPS_PER_THREAD]() {
             for (int i = 0; i < OPS_PER_THREAD; ++i) {
                 mgr.append_tool_call(
                     all_ids[t],
