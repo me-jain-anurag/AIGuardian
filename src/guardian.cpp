@@ -122,6 +122,14 @@ Guardian::execute_tool(const std::string& tool_name,
         "validate(" + tool_name + "): " + validation.reason,
         tool_name, session_id);
 
+    // Step 4: Append to session regardless of success to leave an audit trail
+    ToolCall call;
+    call.tool_name = tool_name;
+    call.parameters = params;
+    call.timestamp = std::chrono::system_clock::now();
+    call.session_id = session_id;
+    session_mgr_->append_tool_call(session_id, call);
+
     if (!validation.approved) {
         return {validation, std::nullopt};
     }
@@ -134,14 +142,6 @@ Guardian::execute_tool(const std::string& tool_name,
     //     sandbox_result = sandbox_mgr_->execute_tool(
     //         tool_name, params_json.dump(), node->sandbox_config);
     // }
-
-    // Step 4: Append to session on success
-    ToolCall call;
-    call.tool_name = tool_name;
-    call.parameters = params;
-    call.timestamp = std::chrono::system_clock::now();
-    call.session_id = session_id;
-    session_mgr_->append_tool_call(session_id, call);
 
     return {validation, sandbox_result};
 }
@@ -229,6 +229,12 @@ std::string Guardian::visualize_session(const std::string& session_id,
         opts.output_format = VisualizationOptions::ASCII;
     }
     std::vector<ValidationResult> results;
+    results.reserve(sequence.size());
+    std::vector<ToolCall> prior_sequence;
+    for (const auto& call : sequence) {
+        results.push_back(validator_->validate(call.tool_name, prior_sequence));
+        prior_sequence.push_back(call);
+    }
     return viz_->render_sequence(policy_graph_, sequence, results, opts);
 }
 

@@ -22,20 +22,20 @@ git checkout -b feature/viz-cli-docs
 ## Phase 1 — Visualization Engine + Logging System
 
 ### Task 1: Visualization Engine Core (tasks.md 9.1–9.2)
-- [ ] 1.1 Implement `VisualizationOptions` struct with output_format, highlight_violations, show_metadata, style_overrides
-- [ ] 1.2 Implement `VisualizationEngine` class
-- [ ] 1.3 Implement `render_graph()` — generate DOT format from PolicyGraph
-- [ ] 1.4 Include node metadata: tool names, risk levels, node types (color-coded)
-- [ ] 1.5 Include edge metadata: transition conditions
-- [ ] 1.6 Apply styling: SENSITIVE_SOURCE=red, EXTERNAL_DESTINATION=orange, DATA_PROCESSOR=green, NORMAL=blue
-- [ ] 1.7 Optionally invoke Graphviz CLI for SVG/PNG generation (`#ifdef HAVE_GRAPHVIZ`)
+- [x] 1.1 Implement `VisualizationOptions` struct with output_format, highlight_violations, show_metadata, style_overrides
+- [x] 1.2 Implement `VisualizationEngine` class
+- [x] 1.3 Implement `render_graph()` — generate DOT format from PolicyGraph
+- [x] 1.4 Include node metadata: tool names, risk levels, node types (color-coded)
+- [x] 1.5 Include edge metadata: transition conditions
+- [x] 1.6 Apply styling: SENSITIVE_SOURCE=red, EXTERNAL_DESTINATION=orange, DATA_PROCESSOR=green, NORMAL=blue
+- [x] 1.7 Optionally invoke Graphviz CLI for SVG/PNG generation (`#ifdef HAVE_GRAPHVIZ`)
 - _Requirements: 8.1, 8.4, 8.5, 8.6_
 
 ### Task 2: Sequence Visualization (tasks.md 9.3)
-- [ ] 2.1 Implement `render_sequence()` — highlight action sequence path through graph
-- [ ] 2.2 Distinguish approved transitions (green solid arrows) from rejected transitions (red dashed arrows)
-- [ ] 2.3 Mark violation points with distinct styling (red X, thick border)
-- [ ] 2.4 Include validation result information in the output
+- [x] 2.1 Implement `render_sequence()` — highlight action sequence path through graph
+- [x] 2.2 Distinguish approved transitions (green solid arrows) from rejected transitions (red dashed arrows)
+- [x] 2.3 Mark violation points with distinct styling (red X, thick border)
+- [x] 2.4 Include validation result information in the output
 - _Requirements: 8.2, 8.3_
 
 > **📌 COMMIT 1 — Visualization core + sequences**
@@ -50,11 +50,11 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 3: ASCII Art Rendering (tasks.md 9.4)
-- [ ] 3.1 Implement `render_ascii_graph()` for terminal output using box-drawing characters
-- [ ] 3.2 Implement `render_ascii_sequence()` for action sequences
-- [ ] 3.3 Support colored output using ANSI escape codes (green=approved, red=blocked)
-- [ ] 3.4 Handle graphs with varying widths and depths
-- [ ] 3.5 Display node types and risk levels in ASCII format
+- [x] 3.1 Implement `render_ascii_graph()` for terminal output using box-drawing characters
+- [x] 3.2 Implement `render_ascii_sequence()` for action sequences
+- [x] 3.3 Support colored output using ANSI escape codes (green=approved, red=blocked)
+- [x] 3.4 Handle graphs with varying widths and depths
+- [x] 3.5 Display node types and risk levels in ASCII format
 - _Requirements: 8.1_
 
 > **📌 COMMIT 2 — ASCII rendering**
@@ -67,13 +67,13 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 4: Visualization Tests (tasks.md 9.5–9.6)
-- [ ] 4.1 Unit tests: DOT format generation contains correct nodes and edges
-- [ ] 4.2 Unit tests: ASCII art rendering produces non-empty output
-- [ ] 4.3 Unit tests: sequence highlighting marks the correct path
-- [ ] 4.4 Unit tests: violation marking uses distinct styling
-- [ ] 4.5 Unit tests: metadata inclusion (tool names, risk levels, conditions)
-- [ ] 4.6 Unit tests: rendering performance (<2s for 100-node graph)
-- [ ] 4.7 Property tests: output generation, path highlighting, violation highlighting, metadata inclusion
+- [x] 4.1 Unit tests: DOT format generation contains correct nodes and edges
+- [x] 4.2 Unit tests: ASCII art rendering produces non-empty output
+- [x] 4.3 Unit tests: sequence highlighting marks the correct path
+- [x] 4.4 Unit tests: violation marking uses distinct styling
+- [x] 4.5 Unit tests: metadata inclusion (tool names, risk levels, conditions)
+- [x] 4.6 Unit tests: rendering performance (<2s for 100-node graph)
+- [x] 4.7 Property tests: output generation, path highlighting, violation highlighting, metadata inclusion
 - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.7_
 
 > **📌 COMMIT 3 — Visualization tests**
@@ -83,22 +83,22 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 5: Logging Infrastructure (tasks.md 11.1)
-- [ ] 5.1 Implement `Logger` class with DEBUG, INFO, WARN, ERROR levels
-- [ ] 5.2 Implement log level filtering (messages below configured level are suppressed)
-- [ ] 5.3 Support JSON log format (structured entries with timestamp, level, message, context)
-- [ ] 5.4 Support plain text log format
-- [ ] 5.5 Support file output (configurable path) and console output (stdout/stderr)
-- [ ] 5.6 Implement `export_logs()` generating valid JSON array of log entries
-- [ ] 5.7 Support filtering exports by level, time range, session ID
+- [x] 5.1 Implement `Logger` class with DEBUG, INFO, WARN, ERROR levels
+- [x] 5.2 Implement log level filtering (messages below configured level are suppressed)
+- [x] 5.3 Support JSON log format (structured entries with timestamp, level, message, context)
+- [x] 5.4 Support plain text log format
+- [x] 5.5 Support file output (configurable path) and console output (stdout/stderr)
+- [x] 5.6 Implement `export_logs()` generating valid JSON array of log entries
+- [x] 5.7 Support filtering exports by level, time range, session ID
 - _Requirements: 13.3, 13.4, 13.5_
 
 ### Task 6: Logging Integration Points (tasks.md 11.2)
-- [ ] 6.1 Define log entry format: `{timestamp, level, component, tool_name, session_id, message, details}`
-- [ ] 6.2 Create logging macros/helpers for validation decisions (approved/rejected with reason)
-- [ ] 6.3 Create logging helpers for sandbox execution (metrics: memory, time)
-- [ ] 6.4 Create logging helpers for sandbox violations (constraint type, limit exceeded)
-- [ ] 6.5 Create logging helpers for policy/wasm load errors
-- [ ] 6.6 Implement fail-safe logging: on internal error, log ERROR and ensure tool call is rejected
+- [x] 6.1 Define log entry format: `{timestamp, level, component, tool_name, session_id, message, details}`
+- [x] 6.2 Create logging macros/helpers for validation decisions (approved/rejected with reason)
+- [x] 6.3 Create logging helpers for sandbox execution (metrics: memory, time)
+- [x] 6.4 Create logging helpers for sandbox violations (constraint type, limit exceeded)
+- [x] 6.5 Create logging helpers for policy/wasm load errors
+- [x] 6.6 Implement fail-safe logging: on internal error, log ERROR and ensure tool call is rejected
 - _Requirements: 13.1, 13.2, 13.4, 13.6_
 
 > **📌 COMMIT 4 — Logger**
@@ -112,11 +112,11 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 7: Logging Tests (tasks.md 11.4–11.5)
-- [ ] 7.1 Unit tests: log level filtering (DEBUG suppressed when level=INFO)
-- [ ] 7.2 Unit tests: JSON format validity (parse output with nlohmann_json)
-- [ ] 7.3 Unit tests: log entry completeness (all fields present)
-- [ ] 7.4 Unit tests: fail-safe error handling (internal error → ERROR log + reject)
-- [ ] 7.5 Property tests: logging completeness, level filtering, error logging, JSON validity, fail-safe
+- [x] 7.1 Unit tests: log level filtering (DEBUG suppressed when level=INFO)
+- [x] 7.2 Unit tests: JSON format validity (parse output with nlohmann_json)
+- [x] 7.3 Unit tests: log entry completeness (all fields present)
+- [x] 7.4 Unit tests: fail-safe error handling (internal error → ERROR log + reject)
+- [x] 7.5 Property tests: logging completeness, level filtering, error logging, JSON validity, fail-safe
 - _Requirements: 13.1, 13.2, 13.3, 13.5, 13.6_
 
 > **📌 COMMIT 5 — Logger tests**
@@ -144,22 +144,22 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 8: CLI Main Entry Point (tasks.md 16.1)
-- [ ] 8.1 Create `cli/main.cpp` with argument parsing
-- [ ] 8.2 Support `--scenario=financial|developer|dos` flag
-- [ ] 8.3 Support `--policy=<path>` flag for custom policy graphs
-- [ ] 8.4 Support `--interactive` flag for manual tool call input
-- [ ] 8.5 Support `--output=<path>` flag for visualization output
-- [ ] 8.6 Display help text with `--help`
+- [x] 8.1 Create `cli/main.cpp` with argument parsing
+- [x] 8.2 Support `--scenario=financial|developer|dos` flag
+- [x] 8.3 Support `--policy=<path>` flag for custom policy graphs
+- [x] 8.4 Support `--interactive` flag for manual tool call input
+- [x] 8.5 Support `--output=<path>` flag for visualization output
+- [x] 8.6 Display help text with `--help`
 - _Requirements: 17.1, 17.2, 17.3, 17.7, 17.8_
 
 ### Task 9: Terminal UI Utilities (tasks.md 16.2)
-- [ ] 9.1 Create `cli/terminal_ui.hpp/.cpp` with colored output functions
-- [ ] 9.2 Implement green output for approved actions: `✓ APPROVED: tool_name`
-- [ ] 9.3 Implement red output for blocked actions: `✗ BLOCKED: tool_name — reason`
-- [ ] 9.4 Implement yellow output for warnings and sandbox metrics
-- [ ] 9.5 Implement ASCII art policy graph rendering (reuse VisualizationEngine)
-- [ ] 9.6 Implement progress indicators for demo execution
-- [ ] 9.7 Handle Windows terminal ANSI escape code support
+- [x] 9.1 Create `cli/terminal_ui.hpp/.cpp` with colored output functions
+- [x] 9.2 Implement green output for approved actions: `✓ APPROVED: tool_name`
+- [x] 9.3 Implement red output for blocked actions: `✗ BLOCKED: tool_name — reason`
+- [x] 9.4 Implement yellow output for warnings and sandbox metrics
+- [x] 9.5 Implement ASCII art policy graph rendering (reuse VisualizationEngine)
+- [x] 9.6 Implement progress indicators for demo execution
+- [x] 9.7 Handle Windows terminal ANSI escape code support
 - _Requirements: 17.5, 17.6_
 
 > **📌 COMMIT 6 — CLI entry + terminal UI**
@@ -173,22 +173,22 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 10: Demo Scenario Implementations (tasks.md 16.3)
-- [ ] 10.1 Create `cli/scenarios.hpp/.cpp` with scenario runner functions
-- [ ] 10.2 Implement `run_financial_demo()`:
+- [x] 10.1 Create `cli/scenarios.hpp/.cpp` with scenario runner functions
+- [x] 10.2 Implement `run_financial_demo()`:
   - Show read_accounts → send_email BLOCKED (exfiltration)
   - Show read_accounts → generate_report → encrypt → send_email ALLOWED (safe path)
   - Display before/after comparison
-- [ ] 10.3 Implement `run_developer_demo()`:
+- [x] 10.3 Implement `run_developer_demo()`:
   - Show read_code → run_tests ALLOWED
   - Show read_code → deploy_production BLOCKED
   - Show read_code → approval_request → deploy_production ALLOWED
-- [ ] 10.4 Implement `run_dos_demo()`:
+- [x] 10.4 Implement `run_dos_demo()`:
   - Show search_database called 5 times → ALLOWED
   - Show search_database called 15 times → BLOCKED after 10
   - Show infinite_loop_tool → TIMEOUT (sandbox)
   - Visualize detected cycle
-- [ ] 10.5 Each scenario displays real-time validation decisions with colored output
-- [ ] 10.6 Each scenario shows both policy and sandbox enforcement
+- [x] 10.5 Each scenario displays real-time validation decisions with colored output
+- [x] 10.6 Each scenario shows both policy and sandbox enforcement
 - _Requirements: 9.1–9.5, 10.1–10.5, 11.1–11.5_
 
 > **📌 COMMIT 7 — Demo scenarios**
@@ -201,18 +201,18 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 11: Interactive Mode (tasks.md 16.4)
-- [ ] 11.1 Accept manual tool call input: `> tool_name param1=value1 param2=value2`
-- [ ] 11.2 Display validation results in real-time
-- [ ] 11.3 Show current action sequence
-- [ ] 11.4 Display policy graph visualization
-- [ ] 11.5 Support `help`, `policy`, `sequence`, `quit` commands
+- [x] 11.1 Accept manual tool call input: `> tool_name param1=value1 param2=value2`
+- [x] 11.2 Display validation results in real-time
+- [x] 11.3 Show current action sequence
+- [x] 11.4 Display policy graph visualization
+- [x] 11.5 Support `help`, `policy`, `sequence`, `quit` commands
 - _Requirements: 17.8_
 
 ### Task 12: Summary Statistics (tasks.md 16.5)
-- [ ] 12.1 Track total calls, approved calls, blocked calls per session
-- [ ] 12.2 Track violation types: policy_violation, sandbox_violation (memory, timeout, file, network)
-- [ ] 12.3 Track execution metrics: avg/max validation time, avg/max sandbox time
-- [ ] 12.4 Display formatted summary at demo completion
+- [x] 12.1 Track total calls, approved calls, blocked calls per session
+- [x] 12.2 Track violation types: policy_violation, sandbox_violation (memory, timeout, file, network)
+- [x] 12.3 Track execution metrics: avg/max validation time, avg/max sandbox time
+- [x] 12.4 Display formatted summary at demo completion
 - _Requirements: 17.9_
 
 > **📌 COMMIT 8 — Interactive mode + stats**
@@ -225,11 +225,11 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 13: CLI Tests (tasks.md 16.6–16.7)
-- [ ] 13.1 Unit tests: scenario flag parsing
-- [ ] 13.2 Unit tests: custom policy loading via --policy
-- [ ] 13.3 Unit tests: summary statistics calculation
-- [ ] 13.4 Unit tests: colored output generation
-- [ ] 13.5 Property tests: CLI scenario parsing, custom policy loading, summary statistics
+- [x] 13.1 Unit tests: scenario flag parsing
+- [x] 13.2 Unit tests: custom policy loading via --policy
+- [x] 13.3 Unit tests: summary statistics calculation
+- [x] 13.4 Unit tests: colored output generation
+- [x] 13.5 Property tests: CLI scenario parsing, custom policy loading, summary statistics
 - _Requirements: 17.2, 17.3, 17.7, 17.9_
 
 > **📌 COMMIT 9 — CLI tests**
@@ -239,11 +239,11 @@ git checkout -b feature/viz-cli-docs
 > ```
 
 ### Task 14: Documentation (tasks.md 21.1–21.5)
-- [ ] 14.1 Create main `README.md`: overview, quick start, installation, basic usage, links
-- [ ] 14.2 Create API documentation: Guardian class, all public structs/enums, method examples
-- [ ] 14.3 Create policy authoring guide: JSON format, DOT format, node types, sandbox configs
-- [ ] 14.4 Create demo scenario documentation: what each demo shows, expected output
-- [ ] 14.5 Review and link `wasm_tools/README.md` (written by Dev B)
+- [x] 14.1 Create main `README.md`: overview, quick start, installation, basic usage, links
+- [x] 14.2 Create API documentation: Guardian class, all public structs/enums, method examples
+- [x] 14.3 Create policy authoring guide: JSON format, DOT format, node types, sandbox configs
+- [x] 14.4 Create demo scenario documentation: what each demo shows, expected output
+- [x] 14.5 Review and link `wasm_tools/README.md` (written by Dev B)
 - _Requirements: 16.1, 16.2, 16.7, 16.8, 1.7, 10.1, 10.2, 9.1–9.5, 10.1–10.5, 11.1–11.5_
 
 > **📌 COMMIT 10 — Documentation**

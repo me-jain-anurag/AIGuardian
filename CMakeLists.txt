@@ -71,8 +71,8 @@ add_library(guardian
     src/policy_validator.cpp
     # src/tool_interceptor.cpp   (Phase 2)
     # Dev D adds:
-    # src/visualization.cpp
-    # src/logger.cpp
+    src/visualization.cpp
+    src/logger.cpp
 )
 
 target_include_directories(guardian PUBLIC
@@ -129,10 +129,30 @@ if(GUARDIAN_BUILD_TESTS)
     add_executable(test_policy_validator tests/unit/test_policy_validator.cpp)
     target_link_libraries(test_policy_validator PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
     add_test(NAME test_policy_validator COMMAND test_policy_validator)
+
+    # Dev D — Logger and Visualization tests
+    add_executable(test_logger tests/unit/test_logger.cpp)
+    target_link_libraries(test_logger PRIVATE guardian Catch2::Catch2WithMain nlohmann_json::nlohmann_json rapidcheck)
+    add_test(NAME test_logger COMMAND test_logger)
+
+    add_executable(test_visualization tests/unit/test_visualization.cpp)
+    target_link_libraries(test_visualization PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_visualization COMMAND test_visualization)
+
+    # Dev D — CLI tests
+    add_executable(test_cli tests/unit/test_cli.cpp cli/scenarios.cpp cli/terminal_ui.cpp)
+    target_link_libraries(test_cli PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME test_cli COMMAND test_cli)
+    set_tests_properties(test_cli PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 # ============================================================================
 # CLI Demo Tool (Phase 2 — Dev D)
 # ============================================================================
-# add_executable(guardian_cli cli/main.cpp cli/terminal_ui.cpp cli/scenarios.cpp)
-# target_link_libraries(guardian_cli PRIVATE guardian)
+add_executable(guardian_cli 
+    cli/main.cpp 
+    cli/terminal_ui.cpp 
+    cli/scenarios.cpp
+)
+target_include_directories(guardian_cli PRIVATE cli)
+target_link_libraries(guardian_cli PRIVATE guardian)
