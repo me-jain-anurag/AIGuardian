@@ -17,6 +17,8 @@ struct CycleDetectionConfig {
 struct PerformanceConfig {
     uint32_t cache_size = 1000;
     bool enable_string_interning = true;
+    bool wasm_module_caching = true; // Add Wasm module caching (Dev B coordinate)
+    uint32_t wasm_cache_size = 50;   // Number of compiled modules to keep in memory
 };
 
 struct LoggingConfig {

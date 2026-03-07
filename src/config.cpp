@@ -72,7 +72,9 @@ std::string Config::to_json() const {
     // Performance
     j["performance"] = {
         {"cache_size", performance.cache_size},
-        {"enable_string_interning", performance.enable_string_interning}
+        {"enable_string_interning", performance.enable_string_interning},
+        {"wasm_module_caching", performance.wasm_module_caching},
+        {"wasm_cache_size", performance.wasm_cache_size}
     };
 
     // Logging
@@ -156,6 +158,12 @@ Config Config::from_json(const std::string& json_str) {
         }
         if (perf.contains("enable_string_interning") && perf["enable_string_interning"].is_boolean()) {
             cfg.performance.enable_string_interning = perf["enable_string_interning"].get<bool>();
+        }
+        if (perf.contains("wasm_module_caching") && perf["wasm_module_caching"].is_boolean()) {
+            cfg.performance.wasm_module_caching = perf["wasm_module_caching"].get<bool>();
+        }
+        if (perf.contains("wasm_cache_size") && perf["wasm_cache_size"].is_number_unsigned()) {
+            cfg.performance.wasm_cache_size = perf["wasm_cache_size"].get<uint32_t>();
         }
     }
 

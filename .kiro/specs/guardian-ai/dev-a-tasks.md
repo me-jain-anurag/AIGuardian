@@ -226,7 +226,7 @@ git checkout -b feature/policy-graph
 - [x] 9.1 Add validation result caching with LRU eviction (coordinate with Dev C for cache key design)
 - [x] 9.2 Implement string interning for tool names in PolicyGraph
 - [x] 9.3 Optimize graph traversal algorithms (adjacency list iteration)
-- [ ] 9.4 Add Wasm module caching improvements (coordinate with Dev B)
+- [x] 9.4 Add Wasm module caching improvements (coordinate with Dev B)
 - _Requirements: 12.1, 12.2, 12.3_
 
 > **📌 COMMIT 9 — Performance optimizations**

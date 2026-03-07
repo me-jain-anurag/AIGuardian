@@ -239,6 +239,11 @@ void Guardian::update_config(const Config& config) {
     if (validator_) {
         validator_->set_cycle_threshold(config.cycle_detection.default_threshold);
     }
+    // TODO: (Dev B coordination) 
+    // if (sandbox_mgr_) {
+    //     sandbox_mgr_->enable_module_caching(config.performance.wasm_module_caching, 
+    //                                         config.performance.wasm_cache_size);
+    // }
 }
 
 Config Guardian::get_config() const {
