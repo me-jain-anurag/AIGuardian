@@ -1,3 +1,4 @@
+#include <fstream>
 // examples/sandbox_config.cpp
 // Owner: Dev B
 // Task 10 — Demonstrates SandboxManager with per-tool configuration,

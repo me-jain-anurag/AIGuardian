@@ -1,3 +1,4 @@
+#include <algorithm>
 // tests/unit/test_policy_graph.cpp
 // Owner: Dev A
 // Unit tests for PolicyGraph and JSON/DOT serialization

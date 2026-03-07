@@ -1,3 +1,4 @@
+#include <fstream>
 // examples/basic_integration.cpp
 // Owner: Dev A
 // Shows basic Guardian initialization, session management, and tool validation

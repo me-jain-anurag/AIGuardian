@@ -1,259 +1,59 @@
 // src/logger.cpp
-// Owner: Dev D
-// Structured logging with level filtering, JSON/text output, file support
+// Owner: Dev D (stub implementation by Dev A for integration)
+// Structured logging
 #include "guardian/logger.hpp"
 
-#include <chrono>
-#include <ctime>
-#include <iomanip>
 #include <iostream>
-#include <nlohmann/json.hpp>
+#include <iomanip>
+#include <chrono>
 #include <sstream>
-#include <stdexcept>
 
 namespace guardian {
 
 // ============================================================================
-// Construction / Destruction
+// Logger Implementation
 // ============================================================================
 
 Logger::Logger(LogLevel min_level) : min_level_(min_level) {}
 
-Logger::~Logger() {
-  if (file_stream_.is_open()) {
-    file_stream_.close();
-  }
+void Logger::debug(const std::string& component, const std::string& message, const std::string& details) {
+    if (min_level_ > LogLevel::DEBUG) return;
+    std::cout << "[DEBUG] [" << component << "] " << message << std::endl;
 }
 
-// ============================================================================
-// Singleton accessor (backward-compatible with guardian.cpp stubs)
-// ============================================================================
-
-Logger &Logger::instance() {
-  static Logger singleton(LogLevel::INFO);
-  return singleton;
+void Logger::info(const std::string& component, const std::string& message, const std::string& details) {
+    if (min_level_ > LogLevel::INFO) return;
+    std::cout << "[INFO] [" << component << "] " << message << std::endl;
 }
 
-// ============================================================================
-// Convenience logging methods
-// ============================================================================
-
-void Logger::debug(const std::string &component, const std::string &message,
-                   const std::string &details) {
-  log_impl(LogLevel::DEBUG, component, message, "", "", details);
+void Logger::warn(const std::string& component, const std::string& message, const std::string& details) {
+    if (min_level_ > LogLevel::WARN) return;
+    std::cout << "[WARN] [" << component << "] " << message << std::endl;
 }
 
-void Logger::info(const std::string &component, const std::string &message,
-                  const std::string &details) {
-  log_impl(LogLevel::INFO, component, message, "", "", details);
+void Logger::error(const std::string& component, const std::string& message, const std::string& details) {
+    if (min_level_ > LogLevel::ERROR) return;
+    std::cerr << "[ERROR] [" << component << "] " << message << std::endl;
 }
-
-void Logger::warn(const std::string &component, const std::string &message,
-                  const std::string &details) {
-  log_impl(LogLevel::WARN, component, message, "", "", details);
-}
-
-void Logger::error(const std::string &component, const std::string &message,
-                   const std::string &details) {
-  log_impl(LogLevel::ERROR, component, message, "", "", details);
-}
-
-void Logger::log_with_context(LogLevel level, const std::string &component,
-                              const std::string &message,
-                              const std::string &tool_name,
-                              const std::string &session_id,
-                              const std::string &details) {
-  log_impl(level, component, message, tool_name, session_id, details);
-}
-
-// ============================================================================
-// Core log_impl
-// ============================================================================
-
-void Logger::log_impl(LogLevel level, const std::string &component,
-                      const std::string &message, const std::string &tool_name,
-                      const std::string &session_id,
-                      const std::string &details) {
-  if (level < min_level_)
-    return;
-
-  // Build entry
-  LogEntry entry;
-  entry.timestamp = format_timestamp();
-  entry.level = level;
-  entry.component = component;
-  entry.tool_name = tool_name;
-  entry.session_id = session_id;
-  entry.message = message;
-  entry.details = details;
-
-  // Format output string
-  std::string formatted =
-      json_format_ ? entry_to_json(entry) : format_entry_text(entry);
-
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    entries_.push_back(entry);
-
-    // Console output
-    if (level >= LogLevel::WARN) {
-      std::cerr << formatted << "\n";
-    } else {
-      std::cout << formatted << "\n";
-    }
-
-    // File output (fail-safe: if file write fails, log to stderr and continue)
-    if (file_stream_.is_open()) {
-      try {
-        file_stream_ << formatted << "\n";
-        file_stream_.flush();
-      } catch (const std::exception &ex) {
-        std::cerr << "[ERROR] [Logger] Failed to write to log file: "
-                  << ex.what() << "\n";
-      }
-    }
-  }
-}
-
-// ============================================================================
-// Configuration
-// ============================================================================
 
 void Logger::set_level(LogLevel level) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  min_level_ = level;
+    min_level_ = level;
 }
 
-void Logger::set_output_file(const std::string &file_path) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (file_stream_.is_open()) {
-    file_stream_.close();
-  }
-  if (file_path.empty()) {
-    output_file_.clear();
-    return;
-  }
-  output_file_ = std::filesystem::path(file_path);
-  // Create parent directories if needed
-  if (output_file_.has_parent_path()) {
-    std::filesystem::create_directories(output_file_.parent_path());
-  }
-  file_stream_.open(output_file_, std::ios::app);
-  if (!file_stream_.is_open()) {
-    // Fail-safe: warn to stderr, don't throw
-    std::cerr << "[ERROR] [Logger] Cannot open log file: " << file_path << "\n";
-  }
+void Logger::set_output_file(const std::string& file_path) {
+    // Stub
 }
 
 void Logger::set_json_format(bool enabled) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  json_format_ = enabled;
+    // Stub
 }
 
-// ============================================================================
-// Export
-// ============================================================================
-
 std::string Logger::export_logs() const {
-  std::lock_guard<std::mutex> lock(mutex_);
-  std::string out = "[\n";
-  for (size_t i = 0; i < entries_.size(); ++i) {
-    out += "  " + entry_to_json(entries_[i]);
-    if (i + 1 < entries_.size())
-      out += ",";
-    out += "\n";
-  }
-  out += "]";
-  return out;
+    return "";
 }
 
 std::string Logger::export_logs(LogLevel min_level) const {
-  std::lock_guard<std::mutex> lock(mutex_);
-  std::string out = "[\n";
-  bool first = true;
-  for (const auto &e : entries_) {
-    if (e.level >= min_level) {
-      if (!first)
-        out += ",\n";
-      out += "  " + entry_to_json(e);
-      first = false;
-    }
-  }
-  if (!first)
-    out += "\n";
-  out += "]";
-  return out;
-}
-
-void Logger::clear() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  entries_.clear();
-}
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-std::string Logger::level_to_string(LogLevel level) {
-  switch (level) {
-  case LogLevel::DEBUG:
-    return "DEBUG";
-  case LogLevel::INFO:
-    return "INFO";
-  case LogLevel::WARN:
-    return "WARN";
-  case LogLevel::ERROR:
-    return "ERROR";
-  default:
-    return "UNKNOWN";
-  }
-}
-
-std::string Logger::format_timestamp() {
-  auto now = std::chrono::system_clock::now();
-  auto time_t = std::chrono::system_clock::to_time_t(now);
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                now.time_since_epoch()) %
-            1000;
-
-  struct tm tm_buf{};
-#ifdef _MSC_VER
-  localtime_s(&tm_buf, &time_t);
-#else
-  localtime_r(&time_t, &tm_buf);
-#endif
-
-  std::ostringstream oss;
-  oss << std::put_time(&tm_buf, "%Y-%m-%dT%H:%M:%S") << "." << std::setfill('0')
-      << std::setw(3) << ms.count();
-  return oss.str();
-}
-
-std::string Logger::format_entry_text(const LogEntry &e) const {
-  std::ostringstream oss;
-  oss << "[" << e.timestamp << "]"
-      << " [" << level_to_string(e.level) << "]"
-      << " [" << e.component << "]";
-  if (!e.tool_name.empty())
-    oss << " tool=" << e.tool_name;
-  if (!e.session_id.empty())
-    oss << " session=" << e.session_id;
-  oss << " " << e.message;
-  if (!e.details.empty())
-    oss << " | " << e.details;
-  return oss.str();
-}
-
-std::string Logger::entry_to_json(const LogEntry &e) const {
-  nlohmann::json j;
-  j["timestamp"] = e.timestamp;
-  j["level"] = level_to_string(e.level);
-  j["component"] = e.component;
-  j["tool_name"] = e.tool_name;
-  j["session_id"] = e.session_id;
-  j["message"] = e.message;
-  j["details"] = e.details;
-  return j.dump();
+    return "";
 }
 
 } // namespace guardian

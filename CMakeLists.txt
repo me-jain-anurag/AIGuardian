@@ -230,3 +230,7 @@ add_executable(guardian_cli
 )
 target_include_directories(guardian_cli PRIVATE cli)
 target_link_libraries(guardian_cli PRIVATE guardian)
+
+# Dev B: Policy JSON Validation Utility
+add_executable(validate_policies policies/validate_policies.cpp)
+target_link_libraries(validate_policies PRIVATE guardian)

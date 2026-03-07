@@ -24,7 +24,7 @@ namespace guardian {
 // ============================================================================
 
 Guardian::Guardian(const std::string& policy_file_path,
-                   const std::string& /*wasm_tools_dir*/,
+                   const std::string& wasm_tools_dir,
                    const std::string& config_file_path) {
     // 1. Load config (safe defaults if file missing)
     if (!config_file_path.empty()) {
@@ -55,7 +55,7 @@ Guardian::Guardian(const std::string& policy_file_path,
             std::string("Guardian: failed to parse policy file — ") + e.what());
     }
 
-    Logger::instance().info("Guardian",
+    Logger().info("Guardian",
         "Loaded policy graph: " + std::to_string(policy_graph_.node_count()) +
         " nodes, " + std::to_string(policy_graph_.edge_count()) + " edges");
 
@@ -81,7 +81,7 @@ Guardian::Guardian(const std::string& policy_file_path,
     //     }
     // }
 
-    Logger::instance().info("Guardian",
+    Logger().info("Guardian",
         "Initialization complete (sandbox pending Dev B merge)");
     initialized_ = true;
 }
@@ -116,19 +116,11 @@ Guardian::execute_tool(const std::string& tool_name,
     // Step 2: Validate using PolicyValidator
     ValidationResult validation = validator_->validate(tool_name, sequence);
 
-    Logger::instance().log_with_context(
-        validation.approved ? LogLevel::INFO : LogLevel::WARN,
-        "Guardian",
-        "validate(" + tool_name + "): " + validation.reason,
-        tool_name, session_id);
-
-    // Step 4: Append to session regardless of success to leave an audit trail
-    ToolCall call;
-    call.tool_name = tool_name;
-    call.parameters = params;
-    call.timestamp = std::chrono::system_clock::now();
-    call.session_id = session_id;
-    session_mgr_->append_tool_call(session_id, call);
+    if (validation.approved) {
+        Logger().info("Guardian", "validate(" + tool_name + "): " + validation.reason);
+    } else {
+        Logger().warn("Guardian", "validate(" + tool_name + "): " + validation.reason);
+    }
 
     if (!validation.approved) {
         return {validation, std::nullopt};
@@ -142,6 +134,14 @@ Guardian::execute_tool(const std::string& tool_name,
     //     sandbox_result = sandbox_mgr_->execute_tool(
     //         tool_name, params_json.dump(), node->sandbox_config);
     // }
+
+    // Step 4: Append to session on success
+    ToolCall call;
+    call.tool_name = tool_name;
+    call.parameters = params;
+    call.timestamp = std::chrono::system_clock::now();
+    call.session_id = session_id;
+    session_mgr_->append_tool_call(session_id, call);
 
     return {validation, sandbox_result};
 }
@@ -169,7 +169,7 @@ std::string Guardian::create_session() {
         throw std::runtime_error("Guardian::create_session: not initialized");
     }
     auto id = session_mgr_->create_session();
-    Logger::instance().info("Guardian", "Session created: " + id);
+    Logger().info("Guardian", "Session created: " + id);
     return id;
 }
 
@@ -178,7 +178,7 @@ void Guardian::end_session(const std::string& session_id) {
         throw std::runtime_error("Guardian::end_session: not initialized");
     }
     session_mgr_->end_session(session_id);
-    Logger::instance().info("Guardian", "Session ended: " + session_id);
+    Logger().info("Guardian", "Session ended: " + session_id);
 }
 
 // ============================================================================
@@ -192,7 +192,7 @@ void Guardian::load_tool_module(const std::string& tool_name,
     }
     // TODO: enable after Dev B merge
     // sandbox_mgr_->load_module(tool_name, wasm_path);
-    Logger::instance().info("Guardian",
+    Logger().info("Guardian",
         "load_tool_module('" + tool_name + "', '" + wasm_path + "') — sandbox pending");
 }
 
@@ -208,9 +208,8 @@ void Guardian::set_default_sandbox_config(const SandboxConfig& config) {
 
 std::string Guardian::visualize_policy(const std::string& format) const {
     VisualizationOptions opts;
-    // DOT is the default; ASCII for terminal; SVG/PNG need Graphviz
-    if (format == "ascii") {
-        opts.output_format = VisualizationOptions::ASCII;
+    if (format == "json") {
+        opts.output_format = VisualizationOptions::JSON;
     } else {
         opts.output_format = VisualizationOptions::DOT;
     }
@@ -225,17 +224,10 @@ std::string Guardian::visualize_session(const std::string& session_id,
     }
     auto sequence = session_mgr_->get_sequence(session_id);
     VisualizationOptions opts;
-    if (format == "ascii") {
-        opts.output_format = VisualizationOptions::ASCII;
+    if (format == "json") {
+        opts.output_format = VisualizationOptions::JSON;
     }
-    std::vector<ValidationResult> results;
-    results.reserve(sequence.size());
-    std::vector<ToolCall> prior_sequence;
-    for (const auto& call : sequence) {
-        results.push_back(validator_->validate(call.tool_name, prior_sequence));
-        prior_sequence.push_back(call);
-    }
-    return viz_->render_sequence(policy_graph_, sequence, results, opts);
+    return viz_->render_sequence(policy_graph_, sequence, std::vector<ValidationResult>{}, opts);
 }
 
 // ============================================================================

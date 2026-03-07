@@ -67,12 +67,21 @@ void PolicyGraph::add_node(const PolicyNode& node) {
     if (!adjacency_list_.count(node.id)) {
         adjacency_list_[node.id] = {};
     }
+    // Phase 3: maintain tool_name → id index
+    if (!node.tool_name.empty()) {
+        tool_name_to_id_[node.tool_name] = node.id;
+    }
 }
 
 void PolicyGraph::remove_node(const std::string& node_id) {
     if (!nodes_.count(node_id)) {
         throw std::invalid_argument(
             "PolicyGraph::remove_node: node '" + node_id + "' does not exist");
+    }
+    // Phase 3: clean tool_name index
+    auto& removed_node = nodes_.at(node_id);
+    if (!removed_node.tool_name.empty()) {
+        tool_name_to_id_.erase(removed_node.tool_name);
     }
     adjacency_list_.erase(node_id);
     for (auto& [src_id, edges] : adjacency_list_) {
@@ -84,6 +93,7 @@ void PolicyGraph::remove_node(const std::string& node_id) {
             edges.end());
     }
     nodes_.erase(node_id);
+    edge_cache_.clear(); // invalidate cache after structural change
 }
 
 bool PolicyGraph::has_node(const std::string& node_id) const {
@@ -383,12 +393,11 @@ PolicyGraph PolicyGraph::from_dot(const std::string& dot_str) {
     std::string line;
 
     // Regex patterns for DOT parsing
-    // Note: using escaped strings instead of R"(...)" for cross-platform compatibility
-    std::regex node_regex("\\s*\"([^\"]+)\"\\s*\\[(.+)\\]\\s*;");
-    std::regex edge_regex("\\s*\"([^\"]+)\"\\s*->\\s*\"([^\"]+)\"");
-    std::regex label_regex("label=\"([^\"]*)\"");
-    std::regex fill_regex("fillcolor=\"([^\"]*)\"");
-    std::regex shape_regex("shape=\"([^\"]*)\"");
+    std::regex node_regex(R"re(\s*"([^"]+)"\s*\[(.+)\]\s*;)re");
+    std::regex edge_regex(R"re(\s*"([^"]+)"\s*->\s*"([^"]+)")re");
+    std::regex label_regex(R"re(label="([^"]*)")re");
+    std::regex fill_regex(R"re(fillcolor="([^"]*)")re");
+    std::regex shape_regex(R"re(shape="([^"]*)")re");
 
     // First pass: collect nodes
     while (std::getline(stream, line)) {
@@ -478,6 +487,83 @@ PolicyGraph PolicyGraph::from_dot(const std::string& dot_str) {
     }
 
     return graph;
+}
+
+// ============================================================================
+// Phase 3: StringPool Implementation
+// ============================================================================
+
+const std::string& StringPool::intern(const std::string& s) {
+    auto [it, _] = pool_.insert(s);
+    return *it;
+}
+
+// ============================================================================
+// Phase 3: Performance Features
+// ============================================================================
+
+void PolicyGraph::clear_caches() {
+    edge_cache_.clear();
+    string_pool_.clear();
+}
+
+std::optional<PolicyNode> PolicyGraph::get_node_by_tool_name(
+    const std::string& tool_name) const {
+    auto it = tool_name_to_id_.find(tool_name);
+    if (it == tool_name_to_id_.end()) {
+        return std::nullopt;
+    }
+    return get_node(it->second);
+}
+
+// BFS-based path finding
+std::vector<std::string> PolicyGraph::find_path(
+    const std::string& from_id, const std::string& to_id) const {
+    if (!has_node(from_id) || !has_node(to_id)) return {};
+    if (from_id == to_id) return {from_id};
+
+    std::unordered_map<std::string, std::string> parent;
+    std::vector<std::string> queue;
+    std::unordered_set<std::string> visited;
+
+    queue.push_back(from_id);
+    visited.insert(from_id);
+    parent[from_id] = "";
+
+    size_t front = 0;
+    while (front < queue.size()) {
+        auto current = queue[front++];
+        auto neighbors = get_neighbors(current);
+        for (const auto& edge : neighbors) {
+            if (visited.count(edge.to_node_id)) continue;
+            parent[edge.to_node_id] = current;
+            if (edge.to_node_id == to_id) {
+                // Reconstruct path
+                std::vector<std::string> path;
+                std::string node = to_id;
+                while (!node.empty()) {
+                    path.push_back(node);
+                    node = parent[node];
+                }
+                std::reverse(path.begin(), path.end());
+                return path;
+            }
+            visited.insert(edge.to_node_id);
+            queue.push_back(edge.to_node_id);
+        }
+    }
+    return {}; // no path found
+}
+
+bool PolicyGraph::is_reachable(const std::string& from_id,
+                                const std::string& to_id) const {
+    // Check cache first
+    std::string cache_key = from_id + "->" + to_id;
+    // Note: edge_cache_ is mutable-like via const_cast for perf caching
+    // In production, use mutable keyword. For now, do BFS directly.
+    if (!has_node(from_id) || !has_node(to_id)) return false;
+    if (from_id == to_id) return true;
+    return !find_path(from_id, to_id).empty();
 }
 
 } // namespace guardian
