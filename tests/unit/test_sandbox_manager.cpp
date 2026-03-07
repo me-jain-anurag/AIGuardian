@@ -217,3 +217,248 @@ TEST_CASE("WasmExecutor rejects null runtime", "[sandbox][executor]") {
         WasmExecutor(nullptr),
         std::invalid_argument);
 }
+
+// ============================================================================
+// Helper: MockRuntime factory for SandboxManager tests
+// ============================================================================
+
+/// Creates a RuntimeFactory that produces MockRuntime instances.
+/// The optional callback lets tests configure each MockRuntime before use.
+static RuntimeFactory make_mock_factory(
+        std::function<void(MockRuntime&)> configure = nullptr) {
+    return [configure](const std::string& /*path*/,
+                       const SandboxConfig& /*cfg*/)
+               -> std::unique_ptr<IWasmRuntime> {
+        auto mock = std::make_unique<MockRuntime>();
+        if (configure) { configure(*mock); }
+        return mock;
+    };
+}
+
+// ============================================================================
+// SandboxManager — execute, violation, config (Task 5.1)
+// ============================================================================
+
+TEST_CASE("SandboxManager executes tool via MockRuntime",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory([](MockRuntime& m) {
+        SandboxResult r;
+        r.success = true;
+        r.output  = R"({"data":"encrypted"})";
+        m.set_next_result(r);
+    }));
+
+    mgr.load_module("encrypt", "encrypt.wasm");
+    auto result = mgr.execute_tool("encrypt", R"({"key":"abc"})",
+                                   SandboxConfig::safe_defaults());
+    CHECK(result.success);
+    CHECK(result.output == R"({"data":"encrypted"})");
+}
+
+TEST_CASE("SandboxManager propagates violations from runtime",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory([](MockRuntime& m) {
+        m.simulate_violation(SandboxViolation::TIMEOUT, "exceeded 5s");
+    }));
+
+    mgr.load_module("slow_tool", "slow.wasm");
+    auto r = mgr.execute_tool("slow_tool", "{}",
+                              SandboxConfig::safe_defaults());
+    CHECK_FALSE(r.success);
+    REQUIRE(r.violation.has_value());
+    CHECK(r.violation->type == SandboxViolation::TIMEOUT);
+}
+
+TEST_CASE("SandboxManager applies per-tool config",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    SandboxConfig custom;
+    custom.memory_limit_mb = 256;
+    custom.timeout_ms      = 10000;
+    custom.network_access  = true;
+    mgr.set_tool_config("net_tool", custom);
+
+    auto cfg = mgr.get_config_for_tool("net_tool");
+    CHECK(cfg.memory_limit_mb == 256);
+    CHECK(cfg.timeout_ms      == 10000);
+    CHECK(cfg.network_access  == true);
+}
+
+TEST_CASE("SandboxManager execute_tool with stored config (no explicit config)",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory([](MockRuntime& m) {
+        SandboxResult r;
+        r.success = true;
+        r.output  = R"({"ok":true})";
+        m.set_next_result(r);
+    }));
+
+    mgr.load_module("tool_a", "a.wasm");
+    auto r = mgr.execute_tool("tool_a", "{}");  // uses default config
+    CHECK(r.success);
+}
+
+// ============================================================================
+// SandboxManager — module loading, caching, reuse (Task 5.2)
+// ============================================================================
+
+TEST_CASE("SandboxManager load_module makes has_module true",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    CHECK_FALSE(mgr.has_module("tool_x"));
+    mgr.load_module("tool_x", "x.wasm");
+    CHECK(mgr.has_module("tool_x"));
+}
+
+TEST_CASE("SandboxManager unload_module removes cached executor",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    mgr.load_module("tool_y", "y.wasm");
+    CHECK(mgr.has_module("tool_y"));
+
+    mgr.unload_module("tool_y");
+    CHECK_FALSE(mgr.has_module("tool_y"));
+}
+
+TEST_CASE("SandboxManager load_module replaces existing executor",
+          "[sandbox][manager]") {
+    int load_count = 0;
+    SandboxManager mgr("/tools", [&load_count](
+            const std::string&, const SandboxConfig&) {
+        ++load_count;
+        return std::make_unique<MockRuntime>();
+    });
+
+    mgr.load_module("tool_z", "z.wasm");
+    mgr.load_module("tool_z", "z_v2.wasm");  // reload replaces
+    CHECK(load_count == 2);
+    CHECK(mgr.has_module("tool_z"));
+}
+
+TEST_CASE("SandboxManager supports multiple concurrent modules",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    mgr.load_module("a", "a.wasm");
+    mgr.load_module("b", "b.wasm");
+    mgr.load_module("c", "c.wasm");
+
+    CHECK(mgr.has_module("a"));
+    CHECK(mgr.has_module("b"));
+    CHECK(mgr.has_module("c"));
+
+    mgr.unload_module("b");
+    CHECK(mgr.has_module("a"));
+    CHECK_FALSE(mgr.has_module("b"));
+    CHECK(mgr.has_module("c"));
+}
+
+// ============================================================================
+// SandboxManager — safe default configuration (Task 5.3)
+// ============================================================================
+
+TEST_CASE("SandboxManager returns safe defaults when no config set",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    auto cfg = mgr.get_config_for_tool("unknown_tool");
+    CHECK(cfg.memory_limit_mb == 128);
+    CHECK(cfg.timeout_ms      == 5000);
+    CHECK(cfg.allowed_paths.empty());
+    CHECK(cfg.network_access  == false);
+}
+
+TEST_CASE("SandboxManager set_default_config overrides safe defaults",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    SandboxConfig custom;
+    custom.memory_limit_mb = 64;
+    custom.timeout_ms      = 2000;
+    mgr.set_default_config(custom);
+
+    auto cfg = mgr.get_config_for_tool("any_tool");
+    CHECK(cfg.memory_limit_mb == 64);
+    CHECK(cfg.timeout_ms      == 2000);
+}
+
+TEST_CASE("SandboxManager per-tool config overrides default config",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    SandboxConfig default_cfg;
+    default_cfg.memory_limit_mb = 64;
+    mgr.set_default_config(default_cfg);
+
+    SandboxConfig tool_cfg;
+    tool_cfg.memory_limit_mb = 512;
+    mgr.set_tool_config("heavy_tool", tool_cfg);
+
+    // heavy_tool gets its per-tool config
+    CHECK(mgr.get_config_for_tool("heavy_tool").memory_limit_mb == 512);
+    // other tools get the default
+    CHECK(mgr.get_config_for_tool("light_tool").memory_limit_mb == 64);
+}
+
+// ============================================================================
+// SandboxManager — error handling (Task 5.4)
+// ============================================================================
+
+TEST_CASE("SandboxManager execute_tool returns error for missing module",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+
+    auto r = mgr.execute_tool("nonexistent", "{}", SandboxConfig::safe_defaults());
+    CHECK_FALSE(r.success);
+    REQUIRE(r.error.has_value());
+    CHECK(r.error->find("not loaded") != std::string::npos);
+}
+
+TEST_CASE("SandboxManager load_module throws when no factory set",
+          "[sandbox][manager]") {
+    SandboxManager mgr;  // default constructor, no factory
+
+    CHECK_THROWS_AS(
+        mgr.load_module("tool", "tool.wasm"),
+        std::runtime_error);
+}
+
+TEST_CASE("SandboxManager load_module throws when factory returns null",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", [](const std::string&, const SandboxConfig&) {
+        return std::unique_ptr<IWasmRuntime>(nullptr);
+    });
+
+    CHECK_THROWS_AS(
+        mgr.load_module("bad_tool", "bad.wasm"),
+        std::runtime_error);
+}
+
+TEST_CASE("SandboxManager unload nonexistent module is safe",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/tools", make_mock_factory());
+    // Should not throw
+    mgr.unload_module("never_loaded");
+    CHECK_FALSE(mgr.has_module("never_loaded"));
+}
+
+TEST_CASE("SandboxManager wasm_tools_dir is accessible",
+          "[sandbox][manager]") {
+    SandboxManager mgr("/my/tools/dir", make_mock_factory());
+    CHECK(mgr.wasm_tools_dir() == "/my/tools/dir");
+}
+
+TEST_CASE("SandboxManager set_runtime_factory enables deferred init",
+          "[sandbox][manager]") {
+    SandboxManager mgr;  // no factory yet
+
+    CHECK_THROWS(mgr.load_module("t", "t.wasm"));
+
+    mgr.set_runtime_factory(make_mock_factory());
+    mgr.load_module("t", "t.wasm");  // now works
+    CHECK(mgr.has_module("t"));
+}
+
