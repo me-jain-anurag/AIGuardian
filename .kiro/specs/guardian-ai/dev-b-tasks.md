@@ -225,11 +225,11 @@ git checkout -b feature/sandbox-manager
 > git checkout feature/sandbox-manager && git rebase main
 > ```
 
-### Task 11: Sandbox Performance Benchmarks (tasks.md 19.1–19.3)
-- [ ] 11.1 Benchmark sandbox overhead (<50ms for simple tools)
-- [ ] 11.2 Benchmark Wasm module loading and caching
-- [ ] 11.3 Add memory pooling for ToolCall objects (coordinate with Dev C)
-- [ ] 11.4 Benchmark memory usage under sustained load
+### Task 11: Sandbox Performance Benchmarks (tasks.md 19.1–19.3) ✅
+- [x] 11.1 Benchmark sandbox overhead (<50ms for simple tools)
+- [x] 11.2 Benchmark Wasm module loading and caching
+- [x] 11.3 Add memory pooling for ToolCall objects (coordinate with Dev C)
+- [x] 11.4 Benchmark memory usage under sustained load
 - _Requirements: 12.3, 12.4, 12.5_
 
 > **📌 COMMIT 10 — Perf benchmarks**
@@ -238,12 +238,12 @@ git checkout -b feature/sandbox-manager
 > git commit -m "test(perf): add sandbox performance benchmarks"
 > ```
 
-### Task 12: Final Validation — Linux (tasks.md 22.1–22.4)
-- [ ] 12.1 Run complete test suite on Linux (the primary platform for sandbox tests)
-- [ ] 12.2 Run valgrind memory leak check on all integration tests
-- [ ] 12.3 Verify all `.wasm` tools load correctly after git clone (binary integrity)
-- [ ] 12.4 Run WasmEdge integration tests with all 3 demo policies
-- [ ] 12.5 Verify sandbox constraint enforcement under stress conditions
+### Task 12: Final Validation — Linux (tasks.md 22.1–22.4) ✅
+- [x] 12.1 Run complete test suite on Linux (the primary platform for sandbox tests)
+- [x] 12.2 Run valgrind memory leak check on all integration tests
+- [x] 12.3 Verify all `.wasm` tools load correctly after git clone (binary integrity)
+- [x] 12.4 Run WasmEdge integration tests with all 3 demo policies
+- [x] 12.5 Verify sandbox constraint enforcement under stress conditions
 
 > **📌 COMMIT 11 — Final fixes**
 > ```bash
