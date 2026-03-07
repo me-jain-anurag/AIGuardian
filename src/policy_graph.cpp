@@ -393,12 +393,11 @@ PolicyGraph PolicyGraph::from_dot(const std::string& dot_str) {
     std::string line;
 
     // Regex patterns for DOT parsing
-    // Note: using escaped strings instead of R"(...)" for cross-platform compatibility
-    std::regex node_regex("\\s*\"([^\"]+)\"\\s*\\[(.+)\\]\\s*;");
-    std::regex edge_regex("\\s*\"([^\"]+)\"\\s*->\\s*\"([^\"]+)\"");
-    std::regex label_regex("label=\"([^\"]*)\"");
-    std::regex fill_regex("fillcolor=\"([^\"]*)\"");
-    std::regex shape_regex("shape=\"([^\"]*)\"");
+    std::regex node_regex(R"(\s*"([^"]+)"\s*\[(.+)\]\s*;)");
+    std::regex edge_regex(R"(\s*"([^"]+)"\s*->\s*"([^"]+)")");
+    std::regex label_regex(R"(label="([^"]*)")");
+    std::regex fill_regex(R"(fillcolor="([^"]*)")");
+    std::regex shape_regex(R"(shape="([^"]*)")");
 
     // First pass: collect nodes
     while (std::getline(stream, line)) {
