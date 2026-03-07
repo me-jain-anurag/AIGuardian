@@ -16,6 +16,20 @@ namespace guardian {
 
 Logger::Logger(LogLevel min_level) : min_level_(min_level) {}
 
+Logger& Logger::instance() {
+    static Logger logger;
+    return logger;
+}
+
+void Logger::log(LogLevel level, const std::string& component, const std::string& message) {
+    switch (level) {
+        case LogLevel::DEBUG: debug(component, message); break;
+        case LogLevel::INFO:  info(component, message);  break;
+        case LogLevel::WARN:  warn(component, message);  break;
+        case LogLevel::ERROR: error(component, message); break;
+    }
+}
+
 void Logger::debug(const std::string& component, const std::string& message, const std::string& details) {
     if (min_level_ > LogLevel::DEBUG) return;
     std::cout << "[DEBUG] [" << component << "] " << message << std::endl;

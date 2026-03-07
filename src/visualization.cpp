@@ -55,4 +55,32 @@ std::string VisualizationEngine::render_sequence(
     return dot;
 }
 
+std::string VisualizationEngine::render_ascii_graph(const PolicyGraph& graph) const {
+    std::string out = "=== Policy Graph ===\n";
+    auto ids = graph.get_all_node_ids();
+    for (const auto& id : ids) {
+        auto node = graph.get_node(id);
+        if (node) {
+            out += "[" + node->tool_name + "] (" + id + ")\n";
+            auto neighbors = graph.get_neighbors(id);
+            for (const auto& edge : neighbors) {
+                out += "  -> " + edge.to_node_id + "\n";
+            }
+        }
+    }
+    return out;
+}
+
+std::string VisualizationEngine::render_ascii_sequence(
+    const PolicyGraph& graph,
+    const std::vector<ToolCall>& sequence,
+    const std::vector<ValidationResult>& results) const {
+    std::string out = "=== Action Sequence ===\n";
+    for (size_t i = 0; i < sequence.size(); ++i) {
+        std::string status = (i < results.size() && results[i].approved) ? "OK" : "BLOCKED";
+        out += std::to_string(i + 1) + ". " + sequence[i].tool_name + " [" + status + "]\n";
+    }
+    return out;
+}
+
 } // namespace guardian

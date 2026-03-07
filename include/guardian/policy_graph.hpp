@@ -8,6 +8,8 @@
 #include <vector>
 #include <unordered_map>
 #include <optional>
+#include <unordered_set>
+#include <set>
 
 namespace guardian {
 
@@ -56,9 +58,26 @@ public:
     std::string to_dot() const;
     static PolicyGraph from_dot(const std::string& dot_str);
 
+    // Phase 3: Performance features
+    void clear_caches();
+    std::optional<PolicyNode> get_node_by_tool_name(const std::string& tool_name) const;
+    std::vector<std::string> find_path(const std::string& from_id, const std::string& to_id) const;
+    bool is_reachable(const std::string& from_id, const std::string& to_id) const;
+
 private:
     std::unordered_map<std::string, PolicyNode> nodes_;
     std::unordered_map<std::string, std::vector<PolicyEdge>> adjacency_list_;
+    std::unordered_map<std::string, std::string> tool_name_to_id_;
+    std::unordered_map<std::string, bool> edge_cache_;
+    std::set<std::string> string_pool_;
+};
+
+class StringPool {
+public:
+    const std::string& intern(const std::string& s);
+    void clear() { pool_.clear(); }
+private:
+    std::set<std::string> pool_;
 };
 
 } // namespace guardian

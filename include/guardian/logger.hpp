@@ -30,6 +30,9 @@ public:
     explicit Logger(LogLevel min_level = LogLevel::INFO);
     ~Logger() = default;
 
+    static Logger& instance();
+    void log(LogLevel level, const std::string& component, const std::string& message);
+
     // Logging methods
     void debug(const std::string& component, const std::string& message,
                const std::string& details = "");
@@ -48,6 +51,7 @@ public:
     // Export
     std::string export_logs() const;
     std::string export_logs(LogLevel min_level) const;
+    void clear() { entries_.clear(); }
 
     private:
     LogLevel min_level_;

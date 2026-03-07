@@ -26,7 +26,7 @@ public:
 
     // Main validation — coordinates all checks, with LRU caching
     ValidationResult validate(const std::string& tool_name,
-                               const std::vector<ToolCall>& action_sequence);
+                               const std::vector<ToolCall>& action_sequence) const;
 
     // Individual checks
     bool check_transition(const std::string& from_tool,
@@ -43,7 +43,7 @@ public:
     std::vector<std::string> get_alternatives(const std::string& from_tool) const;
 
     // Configuration
-    void set_cycle_threshold(size_t threshold);
+    void set_cycle_threshold(uint32_t threshold);
 
 private:
     /// Generate cache key from tool name + last N tools in sequence
@@ -60,9 +60,10 @@ private:
         std::string key;
         ValidationResult result;
     };
-    std::list<CacheEntry> cache_list_;
-    std::unordered_map<std::string, std::list<CacheEntry>::iterator> cache_map_;
+    mutable std::list<CacheEntry> cache_list_;
+    mutable std::unordered_map<std::string, std::list<CacheEntry>::iterator> cache_map_;
     size_t max_cache_size_;
+    uint32_t cycle_threshold_ = 3;
 };
 
 } // namespace guardian

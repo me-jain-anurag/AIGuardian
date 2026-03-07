@@ -48,7 +48,7 @@ public:
                          const std::string& output_path) const;
 
     // Queries
-    std::vector<Session> get_all_sessions() const;
+    std::vector<std::string> get_all_sessions() const;
     size_t active_session_count() const;
 
 private:
