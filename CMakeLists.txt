@@ -67,9 +67,9 @@ add_library(guardian
     # Dev B adds:
     # src/sandbox_manager.cpp
     # Dev C adds:
-    # src/session_manager.cpp
-    # src/policy_validator.cpp
-    # src/tool_interceptor.cpp
+    src/session_manager.cpp
+    # src/policy_validator.cpp   (Phase 1 — added after session manager)
+    # src/tool_interceptor.cpp   (Phase 2)
     # Dev D adds:
     # src/visualization.cpp
     # src/logger.cpp
@@ -119,6 +119,11 @@ if(GUARDIAN_BUILD_TESTS)
     # add_executable(test_policy_graph tests/unit/test_policy_graph.cpp)
     # target_link_libraries(test_policy_graph PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
     # add_test(NAME test_policy_graph COMMAND test_policy_graph)
+
+    # Dev C — Session Manager tests
+    add_executable(test_session_manager tests/unit/test_session_manager.cpp)
+    target_link_libraries(test_session_manager PRIVATE guardian Catch2::Catch2WithMain rapidcheck)
+    add_test(NAME test_session_manager COMMAND test_session_manager)
 endif()
 
 # ============================================================================
