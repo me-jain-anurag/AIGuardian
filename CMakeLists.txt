@@ -63,6 +63,7 @@ endif()
 add_library(guardian
     src/policy_graph.cpp
     src/config.cpp
+    src/guardian.cpp
     # Dev B adds:
     # src/sandbox_manager.cpp
     # Dev C adds:
@@ -72,8 +73,6 @@ add_library(guardian
     # Dev D adds:
     # src/visualization.cpp
     # src/logger.cpp
-    # Dev A adds in Phase 2:
-    # src/guardian.cpp
 )
 
 target_include_directories(guardian PUBLIC
