@@ -1,0 +1,70 @@
+{
+    "nodes": [
+        {
+            "id": "read_code",
+            "tool_name": "read_code",
+            "risk_level": "MEDIUM",
+            "node_type": "SENSITIVE_SOURCE",
+            "sandbox_config": {
+                "memory_limit_mb": 64,
+                "timeout_ms": 2000,
+                "network_access": false,
+                "allowed_paths": [
+                    "/home/shashwat/sandbox/AIGuardian/src"
+                ]
+            }
+        },
+        {
+            "id": "run_tests",
+            "tool_name": "run_tests",
+            "risk_level": "LOW",
+            "node_type": "DATA_PROCESSOR",
+            "sandbox_config": {
+                "memory_limit_mb": 512,
+                "timeout_ms": 30000,
+                "network_access": false,
+                "allowed_paths": [
+                    "/home/shashwat/sandbox/AIGuardian/build"
+                ]
+            }
+        },
+        {
+            "id": "approval_request",
+            "tool_name": "approval_request",
+            "risk_level": "HIGH",
+            "node_type": "NORMAL",
+            "sandbox_config": {
+                "memory_limit_mb": 32,
+                "timeout_ms": 10000,
+                "network_access": true,
+                "allowed_paths": []
+            }
+        },
+        {
+            "id": "deploy_production",
+            "tool_name": "deploy_production",
+            "risk_level": "CRITICAL",
+            "node_type": "EXTERNAL_DESTINATION",
+            "sandbox_config": {
+                "memory_limit_mb": 128,
+                "timeout_ms": 60000,
+                "network_access": true,
+                "allowed_paths": []
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "read_code",
+            "to": "run_tests"
+        },
+        {
+            "from": "run_tests",
+            "to": "approval_request"
+        },
+        {
+            "from": "approval_request",
+            "to": "deploy_production"
+        }
+    ]
+}

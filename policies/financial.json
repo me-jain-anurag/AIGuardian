@@ -1,0 +1,72 @@
+{
+  "nodes": [
+    {
+      "id": "read_accounts",
+      "tool_name": "read_accounts",
+      "risk_level": "HIGH",
+      "node_type": "SENSITIVE_SOURCE",
+      "sandbox_config": {
+        "memory_limit_mb": 64,
+        "timeout_ms": 1000,
+        "network_access": false,
+        "allowed_paths": []
+      }
+    },
+    {
+      "id": "generate_report",
+      "tool_name": "generate_report",
+      "risk_level": "LOW",
+      "node_type": "DATA_PROCESSOR",
+      "sandbox_config": {
+        "memory_limit_mb": 256,
+        "timeout_ms": 5000,
+        "network_access": false,
+        "allowed_paths": [
+          "/tmp/reports"
+        ]
+      }
+    },
+    {
+      "id": "encrypt",
+      "tool_name": "encrypt",
+      "risk_level": "MEDIUM",
+      "node_type": "DATA_PROCESSOR",
+      "sandbox_config": {
+        "memory_limit_mb": 128,
+        "timeout_ms": 2000,
+        "network_access": false,
+        "allowed_paths": []
+      }
+    },
+    {
+      "id": "send_email",
+      "tool_name": "send_email",
+      "risk_level": "CRITICAL",
+      "node_type": "EXTERNAL_DESTINATION",
+      "sandbox_config": {
+        "memory_limit_mb": 32,
+        "timeout_ms": 5000,
+        "network_access": true,
+        "allowed_paths": []
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "read_accounts",
+      "to": "generate_report"
+    },
+    {
+      "from": "read_accounts",
+      "to": "encrypt"
+    },
+    {
+      "from": "generate_report",
+      "to": "encrypt"
+    },
+    {
+      "from": "encrypt",
+      "to": "send_email"
+    }
+  ]
+}

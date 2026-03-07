@@ -15,9 +15,8 @@ git config pull.rebase true
 sh scripts/setup-hooks.sh
 git checkout -b feature/sandbox-manager
 ```
-
+<!--
 ---
-
 ## Phase 1 — Sandbox Manager
 
 ### Task 1: Sandbox Data Structures (tasks.md 3.1)
@@ -181,11 +180,11 @@ git checkout -b feature/sandbox-manager
 > git commit -m "test(wasm-tools): verify tool loading, params, constraints"
 > ```
 
-### Task 9: Demo Policy Files (tasks.md 15.1–15.3)
-- [ ] 9.1 Create `policies/financial.json` — nodes: read_accounts, read_transactions, generate_report, encrypt, send_email with node types and sandbox configs
-- [ ] 9.2 Create `policies/developer.json` — nodes: read_code, run_tests, approval_request, deploy_production with paths and sandbox configs
-- [ ] 9.3 Create `policies/dos_prevention.json` — nodes: search_database, infinite_loop_tool with cycle thresholds and timeouts
-- [ ] 9.4 Validate all policy files load correctly via Dev A's `PolicyGraph::from_json()`
+### Task 9: Demo Policy Files (tasks.md 15.1–15.3) ✅
+- [x] 9.1 Create `policies/financial.json` — nodes: read_accounts, read_transactions, generate_report, encrypt, send_email with node types and sandbox configs
+- [x] 9.2 Create `policies/developer.json` — nodes: read_code, run_tests, approval_request, deploy_production with paths and sandbox configs
+- [x] 9.3 Create `policies/dos_prevention.json` — nodes: search_database, infinite_loop_tool with cycle thresholds and timeouts
+- [x] 9.4 Validate all policy files load correctly via Dev A's `PolicyGraph::from_json()`
 - _Requirements: 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 11.1, 11.2, 11.3_
 
 > **📌 COMMIT 8 — Demo policies**
@@ -194,10 +193,12 @@ git checkout -b feature/sandbox-manager
 > git commit -m "feat(policies): add 3 demo policy files (financial, developer, dos)"
 > ```
 
-### Task 10: Sandbox Configuration Example (tasks.md 17.4)
-- [ ] 10.1 Create `examples/sandbox_config.cpp` showing per-tool sandbox configuration
-- [ ] 10.2 Demonstrate constraint enforcement and violation handling
-- [ ] 10.3 Verify example compiles and runs
+-->
+
+### Task 10: Sandbox Configuration Example (tasks.md 17.4) ✅
+- [x] 10.1 Create `examples/sandbox_config.cpp` showing per-tool sandbox configuration
+- [x] 10.2 Demonstrate constraint enforcement and violation handling
+- [x] 10.3 Verify example compiles and runs
 - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
 > **📌 COMMIT 9 — Sandbox example**

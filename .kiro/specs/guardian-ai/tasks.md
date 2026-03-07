@@ -68,15 +68,15 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Test DOT parsing with syntax errors
     - _Requirements: 1.2, 1.3, 10.3, 10.7_
 
-- [ ] 3. Implement WasmEdge Sandbox Manager
-  - [ ] 3.1 Create SandboxConfig and result structures
+- [x] 3. Implement WasmEdge Sandbox Manager
+  - [x] 3.1 Create SandboxConfig and result structures
     - Implement SandboxConfig struct with memory_limit_mb, timeout_ms, allowed_paths, network_access, environment_vars
     - Implement SandboxResult struct with success, output, error, memory_used_bytes, execution_time_ms, violation
     - Implement SandboxViolation enum with MEMORY_EXCEEDED, TIMEOUT, FILE_ACCESS_DENIED, NETWORK_DENIED
     - Define safe default values: 128MB memory, 5000ms timeout, no file access, no network
     - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.7_
 
-  - [ ] 3.2 Implement WasmExecutor class
+  - [x] 3.2 Implement WasmExecutor class
     - Create WasmExecutor class wrapping WasmEdge::VM
     - Implement constructor loading Wasm module from file path
     - Implement execute() method with parameter passing via JSON
@@ -85,7 +85,7 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Implement reload() method for module updates
     - _Requirements: 4.1, 4.2, 4.5_
 
-  - [ ] 3.3 Implement constraint enforcement in WasmExecutor
+  - [x] 3.3 Implement constraint enforcement in WasmExecutor
     - Configure WasmEdge VM with memory limits (convert MB to pages)
     - Implement timeout enforcement via VM interruption
     - Configure WASI preopened directories for file access control
@@ -94,7 +94,7 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Return detailed SandboxViolation on constraint breaches
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.8_
 
-  - [ ] 3.4 Implement SandboxManager class
+  - [x] 3.4 Implement SandboxManager class
     - Create SandboxManager with wasm_tools_dir configuration
     - Implement load_module() for loading and caching WasmExecutor instances
     - Implement execute_tool() coordinating module lookup and execution
@@ -103,7 +103,7 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Add default configuration fallback logic
     - _Requirements: 3.9, 4.6, 4.7_
 
-  - [ ]* 3.5 Write unit tests for Sandbox Manager
+  - [x]* 3.5 Write unit tests for Sandbox Manager
     - Test Wasm module loading from valid .wasm files
     - Test error handling for missing Wasm files
     - Test error handling for invalid Wasm bytecode
@@ -469,8 +469,8 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
   - Test with sample policy and Wasm modules
   - Ask the user if questions arise
 
-- [ ] 14. Implement Wasm Tools
-  - [ ] 14.1 Create Wasm tool source files
+- [x] 14. Implement Wasm Tools
+  - [x] 14.1 Create Wasm tool source files
     - Create wasm_tools/src/read_accounts.cpp
     - Create wasm_tools/src/send_email.cpp
     - Create wasm_tools/src/generate_report.cpp
@@ -485,14 +485,14 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Each tool exports C functions compatible with WasmEdge
     - _Requirements: 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4, 10.5_
 
-  - [ ] 14.2 Create Wasm build system
+  - [x] 14.2 Create Wasm build system
     - Create wasm_tools/build.sh script
     - Configure wasi-sdk for compilation
     - Compile all tools to .wasm with WASI support
     - Add README.md with tool development guide
     - _Requirements: 18.1_
 
-  - [ ] 14.3 Test Wasm tools
+  - [x] 14.3 Test Wasm tools
     - Verify all tools compile successfully
     - Test tools load in WasmEdge
     - Test parameter passing and result extraction
@@ -501,8 +501,8 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
 
-- [ ] 15. Create Demo Policy Files
-  - [ ] 15.1 Create financial services policy
+- [x] 15. Create Demo Policy Files
+  - [x] 15.1 Create financial services policy
     - Create policies/financial.json
     - Define nodes: read_accounts, read_transactions, generate_report, encrypt, send_email
     - Mark read_accounts and read_transactions as SENSITIVE_SOURCE
@@ -512,7 +512,7 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Include sandbox configs for each tool
     - _Requirements: 9.1, 9.2, 9.3_
 
-  - [ ] 15.2 Create developer assistant policy
+  - [x] 15.2 Create developer assistant policy
     - Create policies/developer.json
     - Define nodes: read_code, run_tests, approval_request, deploy_production
     - Mark deploy_production as EXTERNAL_DESTINATION
@@ -521,7 +521,7 @@ Guardian AI is a C++ runtime security system for AI agents with two-layer protec
     - Include sandbox configs for each tool
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-  - [ ] 15.3 Create DoS prevention policy
+  - [x] 15.3 Create DoS prevention policy
     - Create policies/dos_prevention.json
     - Define nodes: search_database, infinite_loop_tool
     - Configure cycle detection threshold (10 for search_database)

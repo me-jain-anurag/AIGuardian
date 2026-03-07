@@ -65,7 +65,7 @@ add_library(guardian
     src/config.cpp
     src/guardian.cpp
     # Dev B adds:
-    # src/sandbox_manager.cpp
+    src/sandbox_manager.cpp
     # Dev C adds:
     src/session_manager.cpp
     src/policy_validator.cpp
@@ -144,7 +144,23 @@ if(GUARDIAN_BUILD_TESTS)
     target_link_libraries(test_cli PRIVATE guardian Catch2::Catch2WithMain)
     add_test(NAME test_cli COMMAND test_cli)
     set_tests_properties(test_cli PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+    # Dev B: MockRuntime + WasmExecutor + SandboxManager tests
+    add_executable(test_sandbox_manager tests/unit/test_sandbox_manager.cpp)
+    target_link_libraries(test_sandbox_manager PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME test_sandbox_manager COMMAND test_sandbox_manager)
+
+    # Dev B: WasmEdge integration tests (skipped when HAVE_WASMEDGE not defined)
+    add_executable(test_wasmedge tests/sandbox/test_wasmedge.cpp)
+    target_link_libraries(test_wasmedge PRIVATE guardian Catch2::Catch2WithMain)
+    add_test(NAME test_wasmedge COMMAND test_wasmedge)
 endif()
+
+# ============================================================================
+# Sandbox Configuration Demo (Dev B — Task 10)
+# ============================================================================
+add_executable(sandbox_config_demo examples/sandbox_config.cpp)
+target_link_libraries(sandbox_config_demo PRIVATE guardian)
 
 # ============================================================================
 # CLI Demo Tool (Phase 2 — Dev D)
