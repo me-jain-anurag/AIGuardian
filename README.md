@@ -91,12 +91,44 @@ ctest --output-on-failure
 
 All 13 test targets should pass. If executables are blocked by Windows Defender, see [Windows Setup](docs/WINDOWS_SETUP.md).
 
-### Run the CLI demo
+---
+
+## Live demo — SOC Dashboard
+
+The fastest way to see AIGuardian in action is the HTTP gateway + browser dashboard. No Python LLM key required.
+
+### 1. Start the gateway
 
 ```bash
-./bin/guardian_cli --scenario finance --policy-path ../policies/financial.json
-./bin/guardian_cli --scenario dos    --policy-path ../policies/dos_prevention.json
+# From the repo root (policy file is required; port defaults to 8080)
+./build/bin/guardian_gateway.exe policies/demo.json 8080   # Windows
+./build/bin/guardian_gateway      policies/demo.json 8080   # Linux
 ```
+
+### 2. Serve the frontend
+
+```bash
+# Any static file server works — Python's is the simplest:
+python -m http.server 3000 --directory frontend
+```
+
+### 3. Open the dashboard
+
+Navigate to **`http://localhost:3000`** in any modern browser.
+
+You will see a live policy-graph panel on the left and a control panel on the right. The graph shows the seven tools in `policies/demo.json` and the nine permitted transitions between them. Nodes pulse green or red in real time as decisions are made.
+
+### What to try
+
+| Action | What happens |
+|---|---|
+| Click **Persistent Exfiltration** | `read_db → send_email` is blocked three times in a row. The loop-detection banner fires on the third block, then the agent falls back to `create_ticket`. |
+| Click **Shadow Deploy (learns)** | `read_code → deploy_hotfix` is blocked. The sequence recovers via `→ request_approval → deploy_hotfix → send_email`, all approved. |
+| Click **Full Incident Response** | Five-step workflow: `search_kb → create_ticket → request_approval → deploy_hotfix → send_email`. Every step is green. |
+| **Playbook Builder** — type a prompt | Type *"Read the database and email the results directly"*, click **Interpret**. The tool sequence is inferred from the text and then executed. The dashboard shows the block in real time. |
+| **Playbook Builder** — click chips | Pick tools manually (colour-coded by risk level) and click **Run Playbook** to test any arbitrary sequence. |
+
+See [Demo Guide](docs/demo_guide.md) for more worked examples.
 
 ---
 
@@ -248,12 +280,14 @@ std::cout << g.visualize_policy("ascii");
 ## Project structure
 
 ```
+frontend/            SOC dashboard (single HTML file, no build step)
+gateway/             HTTP gateway source (cpp-httplib, connects to Guardian core)
+policies/            Example policy JSON files (demo.json, financial.json, …)
 include/guardian/    Public API headers
 src/                 Implementation
 tests/unit/          Unit and property tests (Catch2 + RapidCheck)
 tests/performance/   Benchmark tests
 examples/            Standalone usage examples
-policies/            Example policy JSON files
 docs/                Documentation
 ```
 
@@ -261,11 +295,12 @@ docs/                Documentation
 
 ## Documentation
 
-- [API Reference](docs/api.md)
+- [Demo Guide](docs/demo_guide.md) — live dashboard, scenarios, Playbook Builder
+- [API Reference](docs/api.md) — C++ library API + HTTP Gateway REST API
 - [Policy Authoring Guide](docs/policy_guide.md)
-- [Demo Scenario Guide](docs/demo_guide.md)
 - [Windows Setup Guide](docs/WINDOWS_SETUP.md)
 - [Contributing](CONTRIBUTING.md)
+- [Roadmap](ROADMAP.md)
 
 ---
 

@@ -119,6 +119,44 @@ The check is: does the current tool call sequence contain a `SENSITIVE_SOURCE` f
 
 ---
 
+## Live demo policy (policies/demo.json)
+
+This is the policy loaded by the SOC Dashboard demo. It models an incident-response agent with seven tools across three columns: sources on the left, a gatekeeper in the middle, and destinations on the right.
+
+```json
+{
+  "nodes": [
+    { "id": "read_code",        "tool_name": "read_code",        "node_type": "SENSITIVE_SOURCE",     "risk_level": "MEDIUM"   },
+    { "id": "read_db",          "tool_name": "read_db",          "node_type": "SENSITIVE_SOURCE",     "risk_level": "HIGH"     },
+    { "id": "search_kb",        "tool_name": "search_kb",        "node_type": "NORMAL",               "risk_level": "LOW"      },
+    { "id": "request_approval", "tool_name": "request_approval", "node_type": "DATA_PROCESSOR",       "risk_level": "LOW"      },
+    { "id": "create_ticket",    "tool_name": "create_ticket",    "node_type": "NORMAL",               "risk_level": "LOW"      },
+    { "id": "deploy_hotfix",    "tool_name": "deploy_hotfix",    "node_type": "EXTERNAL_DESTINATION", "risk_level": "CRITICAL" },
+    { "id": "send_email",       "tool_name": "send_email",       "node_type": "EXTERNAL_DESTINATION", "risk_level": "CRITICAL" }
+  ],
+  "edges": [
+    { "from": "read_code",        "to": "request_approval" },
+    { "from": "read_db",          "to": "request_approval" },
+    { "from": "read_db",          "to": "create_ticket"    },
+    { "from": "search_kb",        "to": "create_ticket"    },
+    { "from": "search_kb",        "to": "send_email"       },
+    { "from": "create_ticket",    "to": "request_approval" },
+    { "from": "request_approval", "to": "deploy_hotfix"    },
+    { "from": "request_approval", "to": "send_email"       },
+    { "from": "deploy_hotfix",    "to": "send_email"       }
+  ]
+}
+```
+
+**Key design decisions:**
+
+- `read_db → send_email` is **not** an edge. Raw database records may never go directly to an external email. This is the exfiltration vector blocked in Scenario 1.
+- `search_kb → send_email` **is** an edge. A low-risk knowledge-base summary is safe to send externally without approval. This contrast is intentional and makes a useful talking point.
+- `request_approval` is the only `DATA_PROCESSOR` in the graph. Any sensitive source must flow through it before reaching an external destination.
+- `create_ticket → request_approval` allows a filed ticket to escalate to human approval, enabling the full incident-response chain: `read_db → create_ticket → request_approval → deploy_hotfix → send_email`.
+
+---
+
 ## Full financial policy example
 
 This is the policy used in the finance demo. It models an agent that reads account data, can generate a report or encrypt it, and can then send it via email — but only after encryption.
