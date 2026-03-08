@@ -73,3 +73,9 @@ build_output.txt
 
 # Demo secrets
 demo/.env
+
+# Demo Python virtualenv
+demo/venv/
+__pycache__/
+*.pyc
+*.pyo

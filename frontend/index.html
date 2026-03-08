@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIGuardian — Security Operations Center</title>
+  <style>
+    /* ── Reset & Root ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #080b14;
+      --bg-card:     #0f1623;
+      --bg-card2:    #141d2e;
+      --border:      #1e2d45;
+      --text:        #dde4f0;
+      --muted:       #5a7098;
+      --accent:      #6366f1;
+
+      /* node fills */
+      --col-sensitive: #1a1650;
+      --brd-sensitive: #4f46e5;
+      --glo-sensitive: #818cf8;
+      --col-normal:    #053a2a;
+      --brd-normal:    #059669;
+      --glo-normal:    #34d399;
+      --col-processor: #3b1c03;
+      --brd-processor: #d97706;
+      --glo-processor: #fbbf24;
+      --col-external:  #3b0a0a;
+      --brd-external:  #dc2626;
+      --glo-external:  #f87171;
+
+      --green: #22c55e;
+      --red:   #ef4444;
+      --edge:  #1e3a5f;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: #0a0f1e;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #e0e7ff;
+    }
+    .header-logo svg { filter: drop-shadow(0 0 6px #6366f1); }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      transition: all 0.3s;
+    }
+    .status-badge.online  { background: #14532d; color: #4ade80; border: 1px solid #166534; }
+    .status-badge.offline { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .event-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Alert Banner ─────────────────────────────────────────── */
+    .alert-banner {
+      background: #431407;
+      border-bottom: 2px solid #ea580c;
+      color: #fed7aa;
+      padding: 10px 24px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      animation: slideDown 0.3s ease-out;
+    }
+    .alert-banner.hidden { display: none; }
+    .alert-banner code {
+      background: rgba(255,255,255,0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .alert-banner button {
+      background: #9a3412;
+      color: #fed7aa;
+      border: 1px solid #c2410c;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+    .alert-banner button:hover { background: #c2410c; }
+    .alert-dismiss { margin-left: auto; background: transparent !important; border-color: transparent !important; color: var(--muted) !important; }
+
+    /* ── Main Layout ──────────────────────────────────────────── */
+    .main-layout {
+      display: flex;
+      gap: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Graph Panel ──────────────────────────────────────────── */
+    .graph-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-item::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    .legend-item.sensitive::before { background: var(--brd-sensitive); }
+    .legend-item.processor::before { background: var(--brd-processor); }
+    .legend-item.normal::before    { background: var(--brd-normal); }
+    .legend-item.external::before  { background: var(--brd-external); }
+
+    #policy-graph {
+      flex: 1;
+      width: 100%;
+      max-height: calc(100vh - 120px);
+    }
+
+    /* ── SVG Column backgrounds ───────────────────────────────── */
+    .col-bg { fill: #0d1729; rx: 12; }
+
+    /* ── SVG Column labels ────────────────────────────────────── */
+    .col-label {
+      font-size: 11px;
+      fill: #334155;
+      text-anchor: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* ── SVG Node styles ──────────────────────────────────────── */
+    .node rect {
+      transition: filter 0.3s;
+      stroke-width: 1.5;
+    }
+    .node.sensitive rect { fill: var(--col-sensitive); stroke: var(--brd-sensitive); }
+    .node.processor rect { fill: var(--col-processor); stroke: var(--brd-processor); }
+    .node.normal    rect { fill: var(--col-normal);    stroke: var(--brd-normal);    }
+    .node.external  rect { fill: var(--col-external);  stroke: var(--brd-external);  }
+
+    .node text {
+      font-family: 'Segoe UI', system-ui, monospace, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+    .node.sensitive text { fill: var(--glo-sensitive); }
+    .node.processor text { fill: var(--glo-processor); }
+    .node.normal    text { fill: var(--glo-normal);    }
+    .node.external  text { fill: var(--glo-external);  }
+
+    .node .type-label {
+      font-size: 9px;
+      font-weight: 400;
+      opacity: 0.6;
+    }
+
+    /* ── Node animation states ────────────────────────────────── */
+    .node.anim-allowed { animation: node-allowed 1.8s ease-out; }
+    .node.anim-blocked { animation: node-blocked 1.8s ease-out; }
+    .node.anim-dim     { animation: node-dim 1.0s ease-out; }
+
+    @keyframes node-allowed {
+      0%   { filter: none; }
+      25%  { filter: drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 25px #22c55e55); }
+      60%  { filter: drop-shadow(0 0 6px #22c55e88); }
+      100% { filter: none; }
+    }
+    @keyframes node-blocked {
+      0%   { filter: none; }
+      15%  { filter: drop-shadow(0 0 16px #ef4444) drop-shadow(0 0 32px #ef444477); }
+      35%  { filter: drop-shadow(0 0 4px #ef4444aa); }
+      50%  { filter: drop-shadow(0 0 16px #ef4444) drop-shadow(0 0 28px #ef444466); }
+      100% { filter: none; }
+    }
+    @keyframes node-dim {
+      0%   { filter: none; }
+      30%  { filter: drop-shadow(0 0 5px #6366f1aa); }
+      100% { filter: none; }
+    }
+
+    /* ── SVG Edge styles ──────────────────────────────────────── */
+    .edge {
+      stroke: var(--edge);
+      stroke-width: 1.5;
+      fill: none;
+      transition: stroke 0.3s, stroke-width 0.3s;
+    }
+    .edge.edge-allowed {
+      animation: edge-ok 1.8s ease-out;
+    }
+    .edge.edge-blocked {
+      animation: edge-fail 1.8s ease-out;
+    }
+
+    @keyframes edge-ok {
+      0%   { stroke: var(--edge);   stroke-width: 1.5; }
+      30%  { stroke: #22c55e;       stroke-width: 3;   }
+      65%  { stroke: #22c55eaa;     stroke-width: 2;   }
+      100% { stroke: var(--edge);   stroke-width: 1.5; }
+    }
+    @keyframes edge-fail {
+      0%   { stroke: var(--edge);   stroke-width: 1.5; }
+      20%  { stroke: #ef4444;       stroke-width: 3;   }
+      45%  { stroke: #ef4444aa;     stroke-width: 2;   }
+      65%  { stroke: #ef4444;       stroke-width: 3;   }
+      100% { stroke: var(--edge);   stroke-width: 1.5; }
+    }
+
+    /* ── Temp blocked edge (non-policy path) ──────────────────── */
+    .temp-blocked-edge {
+      stroke: #ef4444;
+      stroke-width: 2;
+      stroke-dasharray: 7, 4;
+      fill: none;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      animation: temp-appear 2.6s ease-out forwards;
+    }
+    @keyframes temp-appear {
+      0%   { opacity: 0; stroke-width: 1; }
+      10%  { opacity: 1; stroke-width: 2.5; }
+      70%  { opacity: 1; stroke-width: 2; }
+      100% { opacity: 0; stroke-width: 1; }
+    }
+    .blocked-label {
+      font-size: 10px;
+      fill: #ef4444;
+      font-weight: 700;
+      text-anchor: middle;
+      font-family: 'Segoe UI', system-ui, monospace, sans-serif;
+      pointer-events: none;
+      animation: temp-appear 2.6s ease-out forwards;
+    }
+
+    /* ── Side Panel ───────────────────────────────────────────── */
+    .side-panel {
+      width: 320px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .card h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── Scenario buttons ─────────────────────────────────────── */
+    .scenario-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: var(--text);
+      text-align: left;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .scenario-btn:last-child { margin-bottom: 0; }
+    .scenario-btn:hover { border-color: #334155; background: #1a2540; }
+    .scenario-btn.danger   { border-left: 3px solid #dc2626; }
+    .scenario-btn.warning  { border-left: 3px solid #f59e0b; }
+    .scenario-btn.success  { border-left: 3px solid #059669; }
+    .scenario-btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Tool chip palette ────────────────────────────────── */
+    .chip-palette { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 4px; }
+    .tool-chip {
+      padding: 4px 9px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card2);
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s;
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+    .tool-chip:hover { background: #1e2d45; border-color: #4f6272; }
+    .tool-chip.chip-critical { border-left: 3px solid #dc2626; }
+    .tool-chip.chip-high     { border-left: 3px solid #f97316; }
+    .tool-chip.chip-medium   { border-left: 3px solid #eab308; }
+    .tool-chip.chip-low      { border-left: 3px solid #22c55e; }
+
+    /* ── Custom sequence display ──────────────────────────── */
+    .custom-sequence {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      min-height: 30px;
+      padding: 5px 7px;
+      background: var(--bg-card2);
+      border-radius: 6px;
+      border: 1px dashed var(--border);
+      margin: 4px 0;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .seq-item  { background: #1e3a5f; color: #93c5fd; padding: 2px 7px; border-radius: 4px; }
+    .seq-arrow { color: #334155; font-size: 13px; }
+    .custom-actions { display: flex; gap: 6px; margin-top: 4px; }
+    .btn-sm {
+      flex: 1;
+      padding: 5px 0;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 600;
+    }
+    .btn-run   { background: #1e3a5f; color: #93c5fd; }
+    .btn-run:hover   { background: #1a4566; }
+    .btn-clear { background: var(--bg-card2); color: var(--muted); }
+    .btn-clear:hover { background: #1a2540; color: var(--text); }
+    .btn-sm:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Tool legend (reference row) ─────────────────────────── */
+    .tool-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+      padding: 6px 7px;
+      background: var(--bg-card2);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .legend-chip {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      cursor: default;
+      white-space: nowrap;
+    }
+    .legend-chip.chip-critical { color: #f87171; border-color: #7f1d1d; }
+    .legend-chip.chip-high     { color: #fb923c; border-color: #7c2d12; }
+    .legend-chip.chip-medium   { color: #facc15; border-color: #713f12; }
+    .legend-chip.chip-low      { color: #4ade80; border-color: #14532d; }
+
+    /* ── Prompt input row ────────────────────────────────────── */
+    .prompt-row { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 4px; }
+    .prompt-input {
+      flex: 1;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 7px 9px;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+    .prompt-input:focus { outline: none; border-color: #4f6eb5; }
+    .prompt-input::placeholder { color: var(--muted); }
+    .btn-interpret {
+      background: #1e3a5f;
+      color: #93c5fd;
+      border: 1px solid #1e4a7a;
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      align-self: stretch;
+    }
+    .btn-interpret:hover { background: #1a4566; }
+    .interpret-hint {
+      font-size: 10px;
+      min-height: 15px;
+      margin-bottom: 4px;
+      padding: 0 2px;
+    }
+    .interpret-ok   { color: #4ade80; }
+    .interpret-warn { color: #fb923c; }
+    .interpret-err  { color: #f87171; }
+
+    /* ── Divider ─────────────────────────────────────────────── */
+    .pb-divider {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      margin: 6px 0 4px;
+      position: relative;
+    }
+    .pb-divider::before, .pb-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 24%;
+      height: 1px;
+      background: var(--border);
+    }
+    .pb-divider::before { left: 0; }
+    .pb-divider::after  { right: 0; }
+
+    .scenario-btn.running::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent);
+      animation: shimmer 1.2s linear infinite;
+    }
+    @keyframes shimmer {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(100%); }
+    }
+
+    .scenario-icon { font-size: 18px; flex-shrink: 0; }
+    .scenario-name { font-size: 13px; font-weight: 600; }
+    .scenario-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Session list ─────────────────────────────────────────── */
+    .sessions-card { flex-shrink: 0; }
+    .session-list { max-height: 120px; overflow-y: auto; }
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .session-item:last-child { border-bottom: none; }
+    .session-id   { font-size: 11px; font-family: monospace; color: #93c5fd; }
+    .session-stats { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .session-last  { font-size: 10px; color: var(--muted); }
+    .kill-btn {
+      background: #450a0a;
+      color: #fca5a5;
+      border: 1px solid #7f1d1d;
+      padding: 3px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .kill-btn:hover { background: #7f1d1d; }
+    .empty-state { font-size: 12px; color: var(--muted); padding: 6px 4px; }
+
+    /* ── Event feed ───────────────────────────────────────────── */
+    .feed-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .event-feed {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 4px;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity:1; transform:none; } }
+
+    .feed-item.allowed { border-left: 2px solid #059669; }
+    .feed-item.blocked { border-left: 2px solid #dc2626; }
+    .feed-item.system  { border-left: 2px solid #6366f1; }
+
+    .feed-icon { font-size: 13px; flex-shrink: 0; width: 16px; text-align: center; }
+    .feed-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .feed-text strong { font-weight: 600; }
+    .feed-time { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+    /* ── Scrollbar styling ────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Alert Banner ─────────────────────────────────────────────────── -->
+<div id="alert-banner" class="alert-banner hidden"></div>
+
+<!-- ── Header ───────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"
+            fill="#4338ca" stroke="#818cf8" stroke-width="1.2"/>
+      <path d="M9 12l2 2 4-4" stroke="#a5b4fc" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    AIGuardian
+    <span style="color: var(--muted); font-weight: 400; font-size: 13px;">Security Operations Center</span>
+  </div>
+  <div class="header-right">
+    <span id="conn-status" class="status-badge offline">● Connecting...</span>
+    <span id="event-count" class="event-count">0 events</span>
+  </div>
+</header>
+
+<!-- ── Main Layout ───────────────────────────────────────────────────── -->
+<div class="main-layout">
+
+  <!-- ── Policy Graph Panel ─────────────────────────────────────────── -->
+  <div class="graph-panel">
+    <div class="panel-header">
+      <span class="panel-title">Policy Graph — Live Enforcement</span>
+      <div class="legend">
+        <span class="legend-item sensitive">SENSITIVE_SOURCE</span>
+        <span class="legend-item processor">DATA_PROCESSOR</span>
+        <span class="legend-item normal">NORMAL</span>
+        <span class="legend-item external">EXTERNAL_DEST</span>
+      </div>
+    </div>
+
+    <svg id="policy-graph" viewBox="0 0 960 510" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Arrowhead markers -->
+        <marker id="arr"       viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#1e3a5f"/>
+        </marker>
+        <marker id="arr-ok"    viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#22c55e"/>
+        </marker>
+        <marker id="arr-fail"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#ef4444"/>
+        </marker>
+      </defs>
+
+      <!-- Column backgrounds -->
+      <rect x="56"  y="42"  width="178" height="434" rx="12" fill="#0c1526" opacity="0.7"/>
+      <rect x="320" y="120" width="234" height="284" rx="12" fill="#0c1526" opacity="0.7"/>
+      <rect x="754" y="42"  width="168" height="434" rx="12" fill="#0c1526" opacity="0.7"/>
+
+      <!-- Column labels -->
+      <text x="145" y="36" class="col-label">Sources</text>
+      <text x="437" y="114" class="col-label">Gatekeeper</text>
+      <text x="838" y="36" class="col-label">Destinations</text>
+
+      <!-- ── Edges (rendered under nodes) ── -->
+      <g id="edges">
+        <path id="edge-read_code-request_approval"
+              d="M 215 90 C 281 90 281 175 348 175"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-read_db-request_approval"
+              d="M 215 260 C 281 260 281 175 348 175"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-read_db-create_ticket"
+              d="M 215 260 C 285 260 285 365 355 365"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-search_kb-create_ticket"
+              d="M 215 440 C 285 440 285 365 355 365"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-search_kb-send_email"
+              d="M 215 440 C 495 440 495 260 775 260"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-request_approval-deploy_hotfix"
+              d="M 532 175 C 653 175 653 90 775 90"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-request_approval-send_email"
+              d="M 532 175 C 653 175 653 260 775 260"
+              class="edge" marker-end="url(#arr)"/>
+        <!-- New edges added with richer policy -->
+        <path id="edge-deploy_hotfix-send_email"
+              d="M 915 90 C 944 90 944 260 915 260"
+              class="edge" marker-end="url(#arr)"/>
+        <path id="edge-create_ticket-request_approval"
+              d="M 495 365 C 542 365 542 175 532 175"
+              class="edge" marker-end="url(#arr)"/>
+      </g>
+
+      <!-- Temporary blocked-edge overlay (populated by JS) -->
+      <g id="blocked-overlay"></g>
+
+      <!-- ── Nodes ── -->
+      <g id="nodes">
+
+        <!-- read_code (SENSITIVE_SOURCE) -->
+        <g id="node-read_code" class="node sensitive" transform="translate(75, 68)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">read_code</text>
+          <text x="70" y="36" class="type-label">SENSITIVE_SOURCE</text>
+        </g>
+
+        <!-- read_db (SENSITIVE_SOURCE) -->
+        <g id="node-read_db" class="node sensitive" transform="translate(75, 238)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">read_db</text>
+          <text x="70" y="36" class="type-label">SENSITIVE_SOURCE</text>
+        </g>
+
+        <!-- search_kb (NORMAL) -->
+        <g id="node-search_kb" class="node normal" transform="translate(75, 418)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">search_kb</text>
+          <text x="70" y="36" class="type-label">NORMAL</text>
+        </g>
+
+        <!-- request_approval (DATA_PROCESSOR) — wider rect for long name -->
+        <g id="node-request_approval" class="node processor" transform="translate(348, 153)">
+          <rect width="184" height="44" rx="8"/>
+          <text x="92" y="20">request_approval</text>
+          <text x="92" y="36" class="type-label">DATA_PROCESSOR</text>
+        </g>
+
+        <!-- create_ticket (NORMAL) -->
+        <g id="node-create_ticket" class="node normal" transform="translate(355, 343)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">create_ticket</text>
+          <text x="70" y="36" class="type-label">NORMAL</text>
+        </g>
+
+        <!-- deploy_hotfix (EXTERNAL_DESTINATION) -->
+        <g id="node-deploy_hotfix" class="node external" transform="translate(775, 68)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">deploy_hotfix</text>
+          <text x="70" y="36" class="type-label">EXTERNAL_DEST</text>
+        </g>
+
+        <!-- send_email (EXTERNAL_DESTINATION) -->
+        <g id="node-send_email" class="node external" transform="translate(775, 238)">
+          <rect width="140" height="44" rx="8"/>
+          <text x="70" y="20">send_email</text>
+          <text x="70" y="36" class="type-label">EXTERNAL_DEST</text>
+        </g>
+
+      </g><!-- /nodes -->
+    </svg>
+  </div><!-- /graph-panel -->
+
+  <!-- ── Side Panel ─────────────────────────────────────────────────── -->
+  <div class="side-panel">
+
+    <!-- Scenario control -->
+    <div class="card" style="flex-shrink:0;">
+      <h3>Demo Scenarios</h3>
+      <button class="scenario-btn danger" id="btn-s1" onclick="runScenario(1)">
+        <span class="scenario-icon">🔴</span>
+        <div>
+          <div class="scenario-name">Persistent Exfiltration</div>
+          <div class="scenario-desc">read_db → email ×3 → loop alert → ticket</div>
+        </div>
+      </button>
+      <button class="scenario-btn warning" id="btn-s2" onclick="runScenario(2)">
+        <span class="scenario-icon">🟡</span>
+        <div>
+          <div class="scenario-name">Shadow Deploy (learns)</div>
+          <div class="scenario-desc">bypass blocked → finds correct path → deploy + notify</div>
+        </div>
+      </button>
+      <button class="scenario-btn success" id="btn-s3" onclick="runScenario(3)">
+        <span class="scenario-icon">🟢</span>
+        <div>
+          <div class="scenario-name">Full Incident Response</div>
+          <div class="scenario-desc">KB → ticket → approve → deploy → notify  ✓  (5 steps)</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Playbook Builder -->
+    <div class="card" style="flex-shrink:0;">
+      <h3>Playbook Builder
+        <span style="font-size:10px;color:var(--muted);font-weight:400;"> — describe a task or pick tools</span>
+      </h3>
+
+      <!-- Always-visible tool legend so judges know what tools exist -->
+      <div class="tool-legend">
+        <span class="legend-chip chip-medium"   title="Read source code / repo">📁 read_code · MEDIUM</span>
+        <span class="legend-chip chip-high"     title="Query the database">🗄️ read_db · HIGH</span>
+        <span class="legend-chip chip-low"      title="Search knowledge base">🔍 search_kb · LOW</span>
+        <span class="legend-chip chip-low"      title="Request human approval">✅ request_approval · LOW</span>
+        <span class="legend-chip chip-low"      title="File an incident ticket">🎫 create_ticket · LOW</span>
+        <span class="legend-chip chip-critical" title="Deploy hotfix to production">🚀 deploy_hotfix · CRITICAL</span>
+        <span class="legend-chip chip-critical" title="Send external email">📧 send_email · CRITICAL</span>
+      </div>
+
+      <!-- Natural-language prompt input -->
+      <div class="prompt-row">
+        <textarea id="prompt-input" class="prompt-input"
+          placeholder="e.g. &quot;Search the knowledge base, then email the summary to the client&quot;"
+          rows="2"
+          onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)) interpretPrompt()"
+        ></textarea>
+        <button class="btn-interpret" onclick="interpretPrompt()" title="Ctrl+Enter">
+          ✦ Interpret
+        </button>
+      </div>
+      <div id="interpret-hint" class="interpret-hint"></div>
+
+      <!-- Divider -->
+      <div class="pb-divider">— or add tools manually —</div>
+
+      <!-- Manual chip palette -->
+      <div class="chip-palette">
+        <button class="tool-chip chip-medium"   onclick="addChip('read_code')">📁 read_code</button>
+        <button class="tool-chip chip-high"     onclick="addChip('read_db')">🗄️ read_db</button>
+        <button class="tool-chip chip-low"      onclick="addChip('search_kb')">🔍 search_kb</button>
+        <button class="tool-chip chip-low"      onclick="addChip('request_approval')">✅ request_approval</button>
+        <button class="tool-chip chip-low"      onclick="addChip('create_ticket')">🎫 create_ticket</button>
+        <button class="tool-chip chip-critical" onclick="addChip('deploy_hotfix')">🚀 deploy_hotfix</button>
+        <button class="tool-chip chip-critical" onclick="addChip('send_email')">📧 send_email</button>
+      </div>
+
+      <!-- Sequence preview -->
+      <div id="custom-seq" class="custom-sequence">Describe a task above or click tools to build a sequence…</div>
+
+      <div class="custom-actions">
+        <button class="btn-sm btn-clear" onclick="clearCustomSeq()">✕ Clear</button>
+        <button class="btn-sm btn-run" id="btn-custom" onclick="runCustom()">▶ Run Playbook</button>
+      </div>
+    </div>
+
+    <!-- Active sessions -->
+    <div class="card sessions-card">
+      <h3>Active Sessions</h3>
+      <div id="session-list" class="session-list">
+        <div class="empty-state">No active sessions</div>
+      </div>
+    </div>
+
+    <!-- Live event feed -->
+    <div class="card feed-card">
+      <h3>Live Events</h3>
+      <div id="event-feed" class="event-feed"></div>
+    </div>
+
+  </div><!-- /side-panel -->
+
+</div><!-- /main-layout -->
+
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════════════════════
+   AIGuardian Dashboard — JavaScript
+
+   Architecture: scenario buttons call the Guardian HTTP API directly from
+   the browser (fetch → /session, /intercept).  Animations fire from the
+   fetch response body — no subprocess, no SSE dependency for core demo.
+   SSE (/events) is kept as a supplementary stream: it shows events from
+   any external agent (e.g. demo.py running in a terminal) and updates the
+   connection status badge.
+   ════════════════════════════════════════════════════════════════════════ */
+
+const GATEWAY  = 'http://localhost:8080';
+const STEP_MS  = 950;   // pause between tool calls in a scenario
+
+/* ── State ── */
+let totalEvents = 0;
+let isRunning   = false;
+const sessions  = {};   // { sessionId: { prevTool, callCount, blocked } }
+const loopMap   = {};   // { "sid:from:to": [timestamps…] }
+
+/* ── Node center coords for phantom blocked-edge drawing ── */
+const nodeGeo = {
+  read_code:        { cx: 145, cy: 90,  rw: 70, lw: 70 },
+  read_db:          { cx: 145, cy: 260, rw: 70, lw: 70 },
+  search_kb:        { cx: 145, cy: 440, rw: 70, lw: 70 },
+  request_approval: { cx: 440, cy: 175, rw: 92, lw: 92 },
+  create_ticket:    { cx: 425, cy: 365, rw: 70, lw: 70 },
+  deploy_hotfix:    { cx: 845, cy: 90,  rw: 70, lw: 70 },
+  send_email:       { cx: 845, cy: 260, rw: 70, lw: 70 },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   Gateway API helpers
+   ══════════════════════════════════════════════════════════════ */
+async function apiSession() {
+  const r = await fetch(`${GATEWAY}/session`, { method: 'POST' });
+  if (!r.ok) throw new Error('session failed ' + r.status);
+  return (await r.json()).session_id;
+}
+
+async function apiIntercept(sessionId, tool) {
+  const r = await fetch(`${GATEWAY}/intercept`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, tool }),
+  });
+  if (!r.ok) throw new Error('intercept failed ' + r.status);
+  return r.json();
+}
+
+async function apiKill(sessionId) {
+  await fetch(`${GATEWAY}/session/${sessionId}`, { method: 'DELETE' });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Scenario runner
+   The browser calls /session then /intercept for each tool step.
+   Animations fire directly from the response — no Python needed.
+   ══════════════════════════════════════════════════════════════ */
+const SEQUENCES = {
+  // S1: read_db → email ×3 → loop alert fires → create_ticket as fallback
+  1: ['read_db', 'send_email', 'send_email', 'send_email', 'create_ticket'],
+  // S2: tries unauthorized deploy → blocked → finds correct path → deploys + notifies
+  2: ['read_code', 'deploy_hotfix', 'request_approval', 'deploy_hotfix', 'send_email'],
+  // S3: full approved incident-response, all 5 steps green
+  3: ['search_kb', 'create_ticket', 'request_approval', 'deploy_hotfix', 'send_email'],
+};
+
+async function runScenario(n) {
+  if (isRunning) return;
+  isRunning = true;
+
+  // disable all buttons while running
+  [1, 2, 3].forEach(i => { document.getElementById('btn-s' + i).disabled = true; });
+  document.getElementById('btn-s' + n).classList.add('running');
+
+  let sid;
+  try {
+    sid = await apiSession();
+  } catch (e) {
+    appendFeed('system', null, 'Gateway unreachable — is it running on :8080?');
+    endRun(n); return;
+  }
+
+  sessions[sid] = { prevTool: '', callCount: 0, blocked: 0 };
+  renderSessions();
+  appendFeed('system', null, `Scenario ${n} — session ${sid.slice(0, 10)}…`);
+
+  const steps = SEQUENCES[n];
+  for (let i = 0; i < steps.length; i++) {
+    const tool = steps[i];
+
+    let decision;
+    try {
+      decision = await apiIntercept(sid, tool);
+    } catch (e) {
+      appendFeed('system', null, `Network error on ${tool}: ${e.message}`);
+      break;
+    }
+
+    const from = sessions[sid].prevTool || null;
+    const ok   = decision.allowed;
+
+    // update session tracker
+    sessions[sid].callCount++;
+    if (!ok) sessions[sid].blocked++;
+    if (ok)  sessions[sid].prevTool = tool;
+    renderSessions();
+
+    // ── animate ──────────────────────────────────────────────
+    if (from) animateNode(from, 'dim');
+    animateNode(tool, ok ? 'allowed' : 'blocked');
+
+    const edgeId = `edge-${from}-${tool}`;
+    if (document.getElementById(edgeId)) {
+      animateEdge(edgeId, ok ? 'allowed' : 'blocked');
+    } else if (!ok && from) {
+      drawBlockedEdge(from, tool);
+    }
+
+    // ── feed entry ────────────────────────────────────────────
+    const alts = (decision.alternatives || []).slice(0, 2);
+    appendFeed(
+      ok ? 'allowed' : 'blocked',
+      from,
+      tool,
+      alts.length ? `suggest: ${alts.join(', ')}` : decision.reason
+    );
+
+    // ── loop check ────────────────────────────────────────────
+    if (!ok && from) checkLoop(sid, from, tool);
+
+    if (i < steps.length - 1) await sleep(STEP_MS);
+  }
+
+  endRun(n);
+}
+
+function endRun(n) {
+  document.getElementById('btn-s' + n).classList.remove('running');
+  [1, 2, 3].forEach(i => { document.getElementById('btn-s' + i).disabled = false; });
+  document.getElementById('btn-custom').disabled = false;
+  isRunning = false;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Playbook Builder — natural-language interpreter + manual chips
+   ══════════════════════════════════════════════════════════════ */
+let customSeq = [];
+
+/* ── Keyword → tool map ─────────────────────────────────────────────────
+   Each entry lists regex-compatible patterns (matched against lowercase
+   user input).  We record the earliest character position a tool appears
+   in the sentence, then sort by that position so the sequence respects
+   the judge's intended order.
+   ────────────────────────────────────────────────────────────────────── */
+const TOOL_KEYWORDS = {
+  read_db:          ['database', '\\bdb\\b', 'read_db', 'records', 'customer data', 'sql',
+                     'data store', '\\btable\\b', 'fetch data', 'pull data', 'pull from db'],
+  read_code:        ['\\bcode\\b', 'codebase', 'repository', '\\brepo\\b', '\\bsource\\b',
+                     'read_code', 'source code', '\\bgit\\b'],
+  search_kb:        ['knowledge base', '\\bkb\\b', 'search_kb', 'documentation', '\\bdocs\\b',
+                     'look up', 'look-up', '\\bsearch\\b', '\\breference\\b'],
+  request_approval: ['approv', 'permission', 'authoriz', 'request_approval', 'sign off',
+                     'sign-off', 'clearance', 'get approval', 'human review'],
+  create_ticket:    ['\\bticket\\b', 'create_ticket', '\\bincident\\b', '\\bjira\\b',
+                     '\\bissue\\b', 'file a report', 'log a ticket', 'raise a ticket'],
+  deploy_hotfix:    ['\\bdeploy\\b', 'hotfix', 'deploy_hotfix', '\\brelease\\b',
+                     'production', '\\bpush\\b', 'rollout', 'ship it', 'go live'],
+  send_email:       ['\\bemail\\b', 'send_email', 'notif', '\\bmail\\b', '\\balert\\b',
+                     'send.*message', 'reach out', '\\binform\\b'],
+};
+
+function interpretPrompt() {
+  const raw  = document.getElementById('prompt-input').value.trim();
+  const hint = document.getElementById('interpret-hint');
+
+  if (!raw) {
+    hint.className   = 'interpret-hint interpret-warn';
+    hint.textContent = 'Type a sentence describing what the AI agent should do.';
+    return;
+  }
+
+  const text = raw.toLowerCase();
+  const hits = [];
+
+  for (const [tool, keywords] of Object.entries(TOOL_KEYWORDS)) {
+    let earliest = Infinity;
+    for (const kw of keywords) {
+      try {
+        const m = new RegExp(kw, 'i').exec(text);
+        if (m && m.index < earliest) earliest = m.index;
+      } catch {}
+    }
+    if (earliest < Infinity) hits.push({ tool, pos: earliest });
+  }
+
+  if (!hits.length) {
+    hint.className   = 'interpret-hint interpret-err';
+    hint.textContent = '⚠ No tools recognised — try words like "database", "deploy", "email"…';
+    return;
+  }
+
+  // Sort by mention order; deduplicate consecutive identical tools.
+  hits.sort((a, b) => a.pos - b.pos);
+  const seq = hits.map(h => h.tool).filter((t, i, arr) => t !== arr[i - 1]);
+
+  customSeq = seq;
+  renderCustomSeq();
+
+  hint.className   = 'interpret-hint interpret-ok';
+  hint.textContent = `✓ Detected ${seq.length} tool${seq.length > 1 ? 's' : ''}: ${seq.join(' → ')}`;
+}
+
+function addChip(tool) {
+  if (isRunning) return;
+  document.getElementById('interpret-hint').textContent = '';
+  customSeq.push(tool);
+  renderCustomSeq();
+}
+
+function clearCustomSeq() {
+  customSeq = [];
+  document.getElementById('prompt-input').value = '';
+  const hint = document.getElementById('interpret-hint');
+  hint.textContent = '';
+  hint.className = 'interpret-hint';
+  renderCustomSeq();
+}
+
+function renderCustomSeq() {
+  const el = document.getElementById('custom-seq');
+  if (!customSeq.length) {
+    el.innerHTML = 'Describe a task above or click tools to build a sequence…';
+    return;
+  }
+  el.innerHTML = customSeq.map((t, i) =>
+    (i > 0 ? '<span class="seq-arrow">→</span>' : '') +
+    `<span class="seq-item">${t}</span>`
+  ).join('');
+}
+
+async function runCustom() {
+  if (isRunning || !customSeq.length) return;
+  const seq = [...customSeq];   // snapshot at launch time
+  isRunning = true;
+  [1, 2, 3].forEach(i => { document.getElementById('btn-s' + i).disabled = true; });
+  document.getElementById('btn-custom').disabled = true;
+
+  let sid;
+  try {
+    sid = await apiSession();
+  } catch (e) {
+    appendFeed('system', null, 'Gateway unreachable — is it running on :8080?');
+    endCustom(); return;
+  }
+
+  sessions[sid] = { prevTool: '', callCount: 0, blocked: 0 };
+  renderSessions();
+  appendFeed('system', null, `Custom (${seq.length} steps) — session ${sid.slice(0, 10)}…`);
+
+  for (let i = 0; i < seq.length; i++) {
+    const tool = seq[i];
+    let decision;
+    try {
+      decision = await apiIntercept(sid, tool);
+    } catch (e) {
+      appendFeed('system', null, `Network error on ${tool}: ${e.message}`); break;
+    }
+
+    const from = sessions[sid].prevTool || null;
+    const ok   = decision.allowed;
+    sessions[sid].callCount++;
+    if (!ok) sessions[sid].blocked++;
+    if (ok)  sessions[sid].prevTool = tool;
+    renderSessions();
+
+    if (from) animateNode(from, 'dim');
+    animateNode(tool, ok ? 'allowed' : 'blocked');
+    const edgeId = `edge-${from}-${tool}`;
+    if (document.getElementById(edgeId)) {
+      animateEdge(edgeId, ok ? 'allowed' : 'blocked');
+    } else if (!ok && from) {
+      drawBlockedEdge(from, tool);
+    }
+
+    const alts = (decision.alternatives || []).slice(0, 2);
+    appendFeed(
+      ok ? 'allowed' : 'blocked', from, tool,
+      alts.length ? `suggest: ${alts.join(', ')}` : decision.reason
+    );
+    if (!ok && from) checkLoop(sid, from, tool);
+    if (i < seq.length - 1) await sleep(STEP_MS);
+  }
+  endCustom();
+}
+
+function endCustom() {
+  [1, 2, 3].forEach(i => { document.getElementById('btn-s' + i).disabled = false; });
+  document.getElementById('btn-custom').disabled = false;
+  isRunning = false;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Node / Edge animations
+   Classes are removed after the keyframe duration so the same
+   animation can be triggered again without CSS interference.
+   ══════════════════════════════════════════════════════════════ */
+function animateNode(id, type) {
+  const el = document.getElementById('node-' + id);
+  if (!el) return;
+  el.classList.remove('anim-allowed', 'anim-blocked', 'anim-dim');
+  void el.getBoundingClientRect();   // force reflow → restart animation
+  el.classList.add('anim-' + type);
+  setTimeout(() => el.classList.remove('anim-' + type), 2100);
+}
+
+function animateEdge(id, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('edge-allowed', 'edge-blocked');
+  void el.getBoundingClientRect();
+  el.classList.add('edge-' + type);
+  setTimeout(() => el.classList.remove('edge-' + type), 2100);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Phantom blocked-edge overlay
+   Draws a dashed red bezier for transitions not in the policy.
+   ══════════════════════════════════════════════════════════════ */
+function drawBlockedEdge(fromId, toId) {
+  const f = nodeGeo[fromId], t = nodeGeo[toId];
+  if (!f || !t) return;
+
+  const x1 = f.cx + f.rw, y1 = f.cy;
+  const x2 = t.cx - t.lw, y2 = t.cy;
+  const mx = (x1 + x2) / 2;
+  const d  = `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+
+  const overlay = document.getElementById('blocked-overlay');
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('class', 'temp-blocked-edge');
+  overlay.appendChild(path);
+
+  const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  lbl.setAttribute('x', mx);
+  lbl.setAttribute('y', String((y1 + y2) / 2 - 10));
+  lbl.setAttribute('class', 'blocked-label');
+  lbl.textContent = '✗ BLOCKED';
+  overlay.appendChild(lbl);
+
+  setTimeout(() => { path.remove(); lbl.remove(); }, 2800);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Loop detection
+   ══════════════════════════════════════════════════════════════ */
+function checkLoop(sid, from, to) {
+  const key = `${sid}:${from}:${to}`;
+  const now = Date.now();
+  if (!loopMap[key]) loopMap[key] = [];
+  loopMap[key] = loopMap[key].filter(t => now - t < 60000);
+  loopMap[key].push(now);
+  if (loopMap[key].length >= 3) showLoopAlert(sid, from, to);
+}
+
+function showLoopAlert(sid, from, to) {
+  const b = document.getElementById('alert-banner');
+  b.innerHTML =
+    `⚠️ <strong>Policy Loop Detected</strong> — Session <code>${sid.slice(0, 8)}…</code> ` +
+    `keeps hitting <code>${from} → ${to}</code>. ` +
+    `<button onclick="killSession('${sid}')">Kill Session</button>` +
+    `<button class="alert-dismiss" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+  b.classList.remove('hidden');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Session panel
+   ══════════════════════════════════════════════════════════════ */
+function renderSessions() {
+  const list = document.getElementById('session-list');
+  const ids  = Object.keys(sessions);
+  if (!ids.length) {
+    list.innerHTML = '<div class="empty-state">No active sessions</div>';
+    return;
+  }
+  list.innerHTML = ids.map(id => {
+    const s = sessions[id];
+    return `<div class="session-item">
+      <div>
+        <div class="session-id">${id.slice(0, 14)}…</div>
+        <div class="session-stats">${s.callCount} calls · ${s.blocked} blocked</div>
+        <div class="session-last">Last: ${s.prevTool || '—'}</div>
+      </div>
+      <button class="kill-btn" onclick="killSession('${id}')">Kill</button>
+    </div>`;
+  }).join('');
+}
+
+async function killSession(sid) {
+  try { await apiKill(sid); } catch {}
+  delete sessions[sid];
+  renderSessions();
+  appendFeed('system', null, `Session ${sid.slice(0, 10)}… killed by operator`);
+  document.getElementById('alert-banner').classList.add('hidden');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Live event feed
+   ══════════════════════════════════════════════════════════════ */
+function appendFeed(type, from, to, detail) {
+  totalEvents++;
+  document.getElementById('event-count').textContent = totalEvents + ' events';
+
+  const feed = document.getElementById('event-feed');
+  const ts   = new Date().toTimeString().slice(0, 8);
+  const item = document.createElement('div');
+
+  if (type === 'allowed') {
+    const f = from ? `${from} → ` : '';
+    item.className = 'feed-item allowed';
+    item.innerHTML = `<span class="feed-icon">✓</span>` +
+      `<span class="feed-text">${f}<strong>${to}</strong></span>` +
+      `<span class="feed-time">${ts}</span>`;
+
+  } else if (type === 'blocked') {
+    const f = from ? `${from} → ` : '';
+    const d = detail ? `  <span style="color:var(--muted);font-size:10px">${detail}</span>` : '';
+    item.className = 'feed-item blocked';
+    item.innerHTML = `<span class="feed-icon">✗</span>` +
+      `<span class="feed-text">${f}<strong>${to}</strong>${d}</span>` +
+      `<span class="feed-time">${ts}</span>`;
+
+  } else {
+    item.className = 'feed-item system';
+    item.innerHTML = `<span class="feed-icon">ℹ</span>` +
+      `<span class="feed-text">${to}</span>` +
+      `<span class="feed-time">${ts}</span>`;
+  }
+
+  feed.insertBefore(item, feed.firstChild);
+  while (feed.children.length > 80) feed.removeChild(feed.lastChild);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SSE — supplementary stream for external agents
+   (e.g. demo.py running from a terminal)
+   ══════════════════════════════════════════════════════════════ */
+function connectSSE() {
+  const es = new EventSource(`${GATEWAY}/events`);
+
+  es.onopen = () => setStatus(true);
+
+  es.onerror = () => {
+    setStatus(false);
+    es.close();
+    setTimeout(connectSSE, 4000);
+  };
+
+  es.onmessage = (e) => {
+    try {
+      const ev = JSON.parse(e.data);
+      // Only handle events from sessions not driven by the JS buttons above
+      // (those already have direct-fetch animations; processing SSE for them
+      //  would double-animate each step).
+      if (ev.type === 'intercept' && !sessions[ev.session_id]) {
+        if (ev.from) animateNode(ev.from, 'dim');
+        animateNode(ev.to, ev.allowed ? 'allowed' : 'blocked');
+        const edgeId = `edge-${ev.from}-${ev.to}`;
+        if (document.getElementById(edgeId)) {
+          animateEdge(edgeId, ev.allowed ? 'allowed' : 'blocked');
+        } else if (!ev.allowed && ev.from) {
+          drawBlockedEdge(ev.from, ev.to);
+        }
+        appendFeed(ev.allowed ? 'allowed' : 'blocked', ev.from, ev.to,
+                   (ev.alternatives || []).slice(0, 2).join(', '));
+      }
+    } catch {}
+  };
+}
+
+function setStatus(online) {
+  const el = document.getElementById('conn-status');
+  el.textContent = online ? '● Live' : '● Gateway Offline';
+  el.className   = 'status-badge ' + (online ? 'online' : 'offline');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Utilities
+   ══════════════════════════════════════════════════════════════ */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ── Boot ── */
+connectSSE();
+</script>
+</body>
+</html>
