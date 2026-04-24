@@ -532,10 +532,10 @@
 
     /* ── Event feed ───────────────────────────────────────────── */
     .feed-card {
-      flex: 1;
+      flex-shrink: 0;
+      min-height: 250px;
       display: flex;
       flex-direction: column;
-      min-height: 0;
     }
     .event-feed {
       flex: 1;
@@ -807,7 +807,7 @@
     </div>
 
     <!-- Active sessions -->
-    <div class="card sessions-card">
+    <div class="card sessions-card" style="flex-shrink:0;">
       <h3>Active Sessions</h3>
       <div id="session-list" class="session-list">
         <div class="empty-state">No active sessions</div>
