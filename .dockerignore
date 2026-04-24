@@ -1,0 +1,17 @@
+build/
+.git/
+.kiro/
+.vscode/
+demo/venv/
+__pycache__/
+*.pyc
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+sessions/
+*.log
+CMakeCache.txt
+CMakeFiles/

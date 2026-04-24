@@ -1,0 +1,14 @@
+# render.yaml — Infrastructure as Code for Render.com
+# Connect your GitHub repo and Render auto-deploys on push.
+#
+# Free tier: spins down after 15 min inactivity, restarts in ~10s.
+
+services:
+  - type: web
+    name: aiguardian
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8080"

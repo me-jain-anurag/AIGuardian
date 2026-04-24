@@ -71,6 +71,9 @@ docs/html/
 sessions/
 build_output.txt
 
+# Dev tools
+.kiro/
+
 # Demo secrets
 demo/.env
 
