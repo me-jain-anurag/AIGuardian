@@ -1,5 +1,4 @@
 // include/guardian/sandbox_manager.hpp
-// Owner: Dev B
 // WasmEdge sandbox manager with runtime abstraction
 //
 // Cross-platform: MockRuntime and WasmExecutor compile on both Linux and
@@ -24,7 +23,7 @@ namespace guardian {
 // ============================================================================
 
 /// Abstract runtime that can execute a named Wasm function with JSON params.
-/// Dev B implements WasmEdgeRuntime (real) and MockRuntime (test-only).
+/// WasmEdgeRuntime (real) and MockRuntime (test-only) implementations.
 class IWasmRuntime {
 public:
     virtual ~IWasmRuntime() = default;

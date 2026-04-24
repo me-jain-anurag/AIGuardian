@@ -1,5 +1,4 @@
 // src/visualization.cpp
-// Owner: Dev D (stub implementation by Dev A for integration)
 // Policy graph and action sequence visualization
 #include "guardian/visualization.hpp"
 #include "guardian/policy_graph.hpp"

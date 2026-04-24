@@ -1,5 +1,4 @@
 // include/guardian/logger.hpp
-// Owner: Dev D
 // Logging infrastructure with level filtering and JSON/text output
 #pragma once
 

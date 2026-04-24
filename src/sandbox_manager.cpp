@@ -1,5 +1,4 @@
 // src/sandbox_manager.cpp
-// Owner: Dev B
 // Implements MockRuntime, WasmExecutor, and SandboxManager stubs.
 //
 // Cross-platform: only standard C++17 — compiles on both MSVC and GCC/Clang.

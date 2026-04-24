@@ -1,5 +1,4 @@
 // include/guardian/policy_validator.hpp
-// Owner: Dev C
 // Policy validation with transition, cycle, exfiltration checks, and LRU
 // caching
 #pragma once
@@ -60,7 +59,7 @@ private:
   const PolicyGraph &graph_;
   Config config_;
 
-  // Phase 3: Use Dev A's LRUCache for validation results
+  // LRU cache for validation results
   mutable LRUCache<std::string, ValidationResult> validation_cache_;
 
   // Phase 3: Cache profiling counters

@@ -1,5 +1,4 @@
 // include/guardian/session_manager.hpp
-// Owner: Dev C
 // Thread-safe session management with persistence, timeout, and concurrency
 // limits
 #pragma once

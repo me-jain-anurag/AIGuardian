@@ -1,5 +1,4 @@
 // include/guardian/config.hpp
-// Owner: Dev A
 // Configuration management with JSON loading and safe defaults
 #pragma once
 
@@ -17,7 +16,7 @@ struct CycleDetectionConfig {
 struct PerformanceConfig {
     uint32_t cache_size = 1000;
     bool enable_string_interning = true;
-    bool wasm_module_caching = true; // Add Wasm module caching (Dev B coordinate)
+    bool wasm_module_caching = true; // Enable Wasm module caching
     uint32_t wasm_cache_size = 50;   // Number of compiled modules to keep in memory
 };
 

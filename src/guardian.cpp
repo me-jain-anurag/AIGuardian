@@ -1,5 +1,4 @@
 // src/guardian.cpp
-// Owner: Dev A
 // Guardian API — wires PolicyGraph + Validator + Session + Sandbox + Viz
 #include "guardian/guardian.hpp"
 #include "guardian/config.hpp"
@@ -201,7 +200,7 @@ void Guardian::load_tool_module(const std::string &tool_name,
   if (!initialized_) {
     throw std::runtime_error("Guardian::load_tool_module: not initialized");
   }
-  // TODO: enable after Dev B merge
+  // TODO: enable sandbox module loading
   // sandbox_mgr_->load_module(tool_name, wasm_path);
   Logger().info("Guardian", "load_tool_module('" + tool_name + "', '" +
                                 wasm_path + "') — sandbox pending");
@@ -209,7 +208,7 @@ void Guardian::load_tool_module(const std::string &tool_name,
 
 void Guardian::set_default_sandbox_config(const SandboxConfig &config) {
   config_.sandbox = config;
-  // TODO: enable after Dev B merge
+  // TODO: enable sandbox module loading
   // if (sandbox_mgr_) sandbox_mgr_->set_default_config(config);
 }
 
@@ -252,7 +251,7 @@ void Guardian::update_config(const Config &config) {
     validator_->set_cycle_threshold(config.cycle_detection.default_threshold);
   }
   if (sandbox_mgr_) {
-    // Dev B didn't actually implement enable_module_caching inside
+    // Module caching not yet implemented inside
     // SandboxManager in their PR But we update their default configs
     sandbox_mgr_->set_default_config(config.sandbox);
   }

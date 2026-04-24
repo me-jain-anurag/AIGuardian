@@ -1,5 +1,4 @@
 // include/guardian/guardian.hpp
-// Owner: Dev A (Phase 2)
 // Main entry point API wrapping all components
 #pragma once
 

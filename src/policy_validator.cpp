@@ -1,5 +1,4 @@
 // src/policy_validator.cpp
-// Owner: Dev C
 // Policy validation engine — Phase 3: LRU caching, optimized cycle/exfiltration
 // detection
 #include "guardian/policy_validator.hpp"

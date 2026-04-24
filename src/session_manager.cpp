@@ -1,5 +1,4 @@
 // src/session_manager.cpp
-// Owner: Dev C
 // Session lifecycle management
 #include "guardian/session_manager.hpp"
 

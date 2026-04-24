@@ -31,7 +31,7 @@ enum class NodeType {
 };
 
 // ============================================================================
-// Sandbox Types (Dev B owns implementation)
+// Sandbox Types
 // ============================================================================
 
 struct SandboxConfig {
@@ -67,7 +67,7 @@ struct SandboxResult {
 };
 
 // ============================================================================
-// Tool Call Types (Dev C owns implementation)
+// Tool Call Types
 // ============================================================================
 
 struct ToolCall {
@@ -78,7 +78,7 @@ struct ToolCall {
 };
 
 // ============================================================================
-// Validation Types (Dev C owns implementation)
+// Validation Types
 // ============================================================================
 
 struct CycleInfo {

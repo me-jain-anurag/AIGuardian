@@ -1,5 +1,4 @@
 // src/logger.cpp
-// Owner: Dev D (stub implementation by Dev A for integration)
 // Structured logging
 #include "guardian/logger.hpp"
 

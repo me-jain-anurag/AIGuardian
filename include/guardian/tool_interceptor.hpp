@@ -1,5 +1,4 @@
 // include/guardian/tool_interceptor.hpp
-// Owner: Dev C
 // Tool call interception coordinating validation and sandbox execution
 #pragma once
 
@@ -15,7 +14,7 @@ namespace guardian {
 // Forward declarations
 class PolicyValidator;
 class SessionManager;
-class SandboxManager; // Dev B
+class SandboxManager;
 
 class ToolInterceptor {
 public:

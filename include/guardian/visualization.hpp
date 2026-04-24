@@ -1,5 +1,4 @@
 // include/guardian/visualization.hpp
-// Owner: Dev D
 // Policy graph and action sequence visualization
 #pragma once
 

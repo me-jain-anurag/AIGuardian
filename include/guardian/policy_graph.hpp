@@ -1,5 +1,4 @@
 // include/guardian/policy_graph.hpp
-// Owner: Dev A
 // Policy graph engine with adjacency list representation
 // Phase 3: Performance optimizations (string interning, LRU cache, fast lookup)
 #pragma once

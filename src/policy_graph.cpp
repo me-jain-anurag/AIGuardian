@@ -1,5 +1,4 @@
 // src/policy_graph.cpp
-// Owner: Dev A
 // PolicyGraph implementation — adjacency list + JSON/DOT serialization
 #include "guardian/policy_graph.hpp"
 

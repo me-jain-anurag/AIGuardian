@@ -1,5 +1,4 @@
 // src/tool_interceptor.cpp
-// Owner: Dev C
 // Coordinates validation + sandbox execution
 #include "guardian/tool_interceptor.hpp"
 #include "guardian/logger.hpp"

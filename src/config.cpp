@@ -1,5 +1,4 @@
 // src/config.cpp
-// Owner: Dev A
 // Configuration management — load/save JSON with safe defaults
 #include "guardian/config.hpp"
 
