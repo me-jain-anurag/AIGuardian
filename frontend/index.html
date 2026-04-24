@@ -837,7 +837,11 @@
    connection status badge.
    ════════════════════════════════════════════════════════════════════════ */
 
-const GATEWAY  = 'http://localhost:8080';
+// Auto-detect gateway URL: if served from the gateway itself, use relative paths.
+// If served standalone (e.g., file:// or different port), fall back to localhost:8080.
+const GATEWAY  = (location.protocol === 'file:' || location.port === '3000')
+                 ? 'http://localhost:8080'
+                 : location.origin;
 const STEP_MS  = 950;   // pause between tool calls in a scenario
 
 /* ── State ── */

@@ -55,6 +55,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <stdexcept>
 #include <map>
@@ -68,6 +69,7 @@
 #include <ctime>
 
 using json = nlohmann::json;
+namespace fs = std::filesystem;
 
 // ---------------------------------------------------------------------------
 // Utility: ISO-8601 UTC timestamp
@@ -139,9 +141,11 @@ struct EventBroadcaster {
 int main(int argc, char* argv[]) {
     std::string policy_file = "policies/demo.json";
     int port = 8080;
+    std::string frontend_dir = "frontend";
 
     if (argc >= 2) policy_file = argv[1];
     if (argc >= 3) port = std::stoi(argv[2]);
+    if (argc >= 4) frontend_dir = argv[3];
 
     // Python executable used by POST /demo/run/:scenario.
     // Override with GUARDIAN_PYTHON env var (e.g. path to a venv interpreter).
@@ -158,6 +162,7 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------------------------
     guardian::Guardian g(policy_file);
     std::cout << "[Guardian Gateway] Policy loaded: " << policy_file << "\n";
+    std::cout << "[Guardian Gateway] Frontend dir:  " << frontend_dir << "\n";
     std::cout << "[Guardian Gateway] Listening on http://0.0.0.0:" << port << "\n";
 
     // -------------------------------------------------------------------------
@@ -176,7 +181,14 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------------------------
     httplib::Server svr;
 
-    // CORS — allow the React dev server (localhost:5173) and any other origin.
+    // Serve the frontend directory as static files.
+    // If the frontend directory exists, GET / will serve index.html.
+    if (fs::exists(frontend_dir)) {
+        svr.set_mount_point("/ui", frontend_dir);
+        std::cout << "[Guardian Gateway] Serving frontend from /ui\n";
+    }
+
+    // CORS — allow cross-origin requests from any origin.
     svr.set_default_headers({
         {"Access-Control-Allow-Origin",  "*"},
         {"Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS"},
@@ -185,6 +197,11 @@ int main(int argc, char* argv[]) {
     // Respond to all OPTIONS preflight requests with 204 No Content.
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
         res.status = 204;
+    });
+
+    // ── GET / — redirect to dashboard ────────────────────────────────────────
+    svr.Get("/", [](const httplib::Request&, httplib::Response& res) {
+        res.set_redirect("/ui/index.html");
     });
 
     // ── GET /health ──────────────────────────────────────────────────────────
