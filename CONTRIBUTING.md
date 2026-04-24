@@ -52,7 +52,7 @@ policies/            Example policy JSON files
 docs/                Documentation
 ```
 
-Each header in `include/guardian/` has a corresponding `.cpp` in `src/`. Ownership comments at the top of each file indicate which dev originally wrote it (for context, not strict ownership).
+Each header in `include/guardian/` has a corresponding `.cpp` in `src/`.
 
 ---
 

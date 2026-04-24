@@ -1,26 +1,26 @@
 # AIGuardian
 
-AIGuardian is a C++17 runtime guard for AI agent tool calls. You define which tools an agent is allowed to call, in what order, and under what conditions — AIGuardian enforces those rules at runtime and blocks anything that violates them.
+**C++17 | CMake | HTTP Gateway + SOC Dashboard Demo**
 
-It is not a firewall or a network-level control. It sits between your orchestration code and your tool executors, intercepts every call, validates it against a policy graph, and either approves or blocks it before execution.
+A runtime guard for AI agent tool calls — built by Team CodeGeass at a hackathon (2026). AIGuardian enforces safety constraints on tool usage by validating every call against a policy graph before execution.
+
+> **[▶ Live Demo](https://aiguardian.onrender.com)** — click a scenario button and watch the policy graph animate decisions in real time.
 
 ---
 
-## What problem does it solve
+## Key capabilities
 
-AI agents that use tools (file access, APIs, databases, code execution) can behave in unexpected ways — not because they are malicious, but because LLM reasoning is non-deterministic. Without a runtime guard:
-
-- An agent can read sensitive data and immediately send it to an external service. No sanitization, no human review.
-- An agent stuck in a loop can hammer an internal service thousands of times before anyone notices.
-- An agent given broad tool access can chain calls in ways the developer never intended.
-
-AIGuardian addresses this by requiring you to explicitly declare which tool transitions are permitted. Anything not in the policy is blocked.
+| Capability | How it works |
+|---|---|
+| **Policy graph validator** | Every tool is a node; every permitted transition is an edge. Calls that don't follow the graph are blocked at runtime, reducing unsafe tool usage. |
+| **Cycle & exfiltration detection** | Detects repeated tool-call streaks (agent stuck in a loop) and sensitive-source → external-destination paths with no data-processing step in between. |
+| **HTTP gateway + SOC dashboard** | Exposes `/session` and `/intercept` endpoints. A browser-based dashboard renders the policy graph live — nodes pulse green/red as decisions are made. |
 
 ---
 
 ## How it works
 
-You write a policy as a JSON file. Each node is a tool. Each edge is a permitted transition between tools. You also tag each node by type: `SENSITIVE_SOURCE`, `DATA_PROCESSOR`, or `EXTERNAL_DESTINATION`.
+You write a policy as a JSON file. Each node is a tool. Each edge is a permitted transition. Nodes are tagged by type: `SENSITIVE_SOURCE`, `DATA_PROCESSOR`, `NORMAL`, or `EXTERNAL_DESTINATION`.
 
 At runtime, AIGuardian:
 
@@ -58,29 +58,17 @@ Each user session gets its own policy graph. Sessions are fully isolated at the 
 ### Prerequisites
 
 - CMake 3.16 or higher
-- A C++17 compiler:
-  - **Windows**: MSYS2 UCRT64 — see [Windows Setup](docs/WINDOWS_SETUP.md)
-  - **Linux**: GCC 9+ or Clang 10+
+- A C++17 compiler (GCC 9+, Clang 10+, or MSVC 2019+)
 - Git
 
-### Build on Linux
+### Build
 
 ```bash
-git clone https://github.com/No-Reed/AIGuardian.git
+git clone https://github.com/me-jain-anurag/AIGuardian.git
 cd AIGuardian
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j$(nproc)
-```
-
-### Build on Windows (MSYS2 UCRT64)
-
-```bash
-git clone https://github.com/No-Reed/AIGuardian.git
-cd AIGuardian
-mkdir build && cd build
-cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
-mingw32-make -j4
 ```
 
 ### Run tests
@@ -89,32 +77,20 @@ mingw32-make -j4
 ctest --output-on-failure
 ```
 
-All 13 test targets should pass. If executables are blocked by Windows Defender, see [Windows Setup](docs/WINDOWS_SETUP.md).
-
 ---
 
 ## Live demo — SOC Dashboard
 
-The fastest way to see AIGuardian in action is the HTTP gateway + browser dashboard. No Python LLM key required.
+The fastest way to see AIGuardian in action is the HTTP gateway + browser dashboard.
 
-### 1. Start the gateway
-
-```bash
-# From the repo root (policy file is required; port defaults to 8080)
-./build/bin/guardian_gateway.exe policies/demo.json 8080   # Windows
-./build/bin/guardian_gateway      policies/demo.json 8080   # Linux
-```
-
-### 2. Serve the frontend
+### Start locally
 
 ```bash
-# Any static file server works — Python's is the simplest:
-python -m http.server 3000 --directory frontend
+# Start the gateway (serves both API and dashboard UI)
+./build/bin/guardian_gateway policies/demo.json 8080
 ```
 
-### 3. Open the dashboard
-
-Navigate to **`http://localhost:3000`** in any modern browser.
+Open **`http://localhost:8080`** in any modern browser.
 
 You will see a live policy-graph panel on the left and a control panel on the right. The graph shows the seven tools in `policies/demo.json` and the nine permitted transitions between them. Nodes pulse green or red in real time as decisions are made.
 
@@ -221,7 +197,7 @@ Guardian                  main API — wires everything together
     |
     +-- ToolInterceptor   coordinates validator + sandbox per call
     |
-    +-- SandboxManager    WebAssembly (WasmEdge/WASI) execution and resource limits
+    +-- SandboxManager    pluggable execution sandbox (MockRuntime / WasmEdge)
     |
     +-- VisualizationEngine   DOT and ASCII rendering of graphs and sequences
     |
@@ -298,9 +274,23 @@ docs/                Documentation
 - [Demo Guide](docs/demo_guide.md) — live dashboard, scenarios, Playbook Builder
 - [API Reference](docs/api.md) — C++ library API + HTTP Gateway REST API
 - [Policy Authoring Guide](docs/policy_guide.md)
-- [Windows Setup Guide](docs/WINDOWS_SETUP.md)
 - [Contributing](CONTRIBUTING.md)
 - [Roadmap](ROADMAP.md)
+
+---
+
+## Deployment
+
+AIGuardian ships with a `Dockerfile` for one-command deployment:
+
+```bash
+docker build -t aiguardian .
+docker run -p 8080:8080 aiguardian
+```
+
+The container runs the C++ gateway serving both the REST API and the SOC dashboard at `http://localhost:8080`.
+
+Currently deployed on **[Render](https://aiguardian.onrender.com)** (free tier).
 
 ---
 
@@ -310,7 +300,9 @@ MIT License. Copyright (c) 2026 CodeGeass Team.
 
 ## Team
 
-- **me-jain-anurag**
+Built by Team CodeGeass at a hackathon:
+
+- **me-jain-anurag** — policy graph validator, cycle/exfiltration detection
 - **Haruto1632**
 - **Ao-chuba**
 - **No-Reed**
