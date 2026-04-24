@@ -4,7 +4,7 @@
 
 A runtime guard for AI agent tool calls — built by Team CodeGeass at a hackathon (2026). AIGuardian enforces safety constraints on tool usage by validating every call against a policy graph before execution.
 
-> **[▶ Live Demo](https://aiguardian.onrender.com)** — click a scenario button and watch the policy graph animate decisions in real time.
+> **[▶ Live Demo](https://aiguardian-nb8g.onrender.com)** — click a scenario button and watch the policy graph animate decisions in real time.
 
 ---
 
@@ -290,7 +290,7 @@ docker run -p 8080:8080 aiguardian
 
 The container runs the C++ gateway serving both the REST API and the SOC dashboard at `http://localhost:8080`.
 
-Currently deployed on **[Render](https://aiguardian.onrender.com)** (free tier).
+Currently deployed on **[Render](https://aiguardian-nb8g.onrender.com)** (free tier).
 
 ---
 
