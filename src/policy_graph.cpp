@@ -83,7 +83,7 @@ void PolicyGraph::add_node(const PolicyNode &node) {
   if (!adjacency_list_.count(node.id)) {
     adjacency_list_[node.id] = {};
   }
-  // Phase 3: maintain tool_name → id index
+  // Maintain tool_name → id index
   if (!node.tool_name.empty()) {
     tool_name_to_id_[node.tool_name] = node.id;
   }
@@ -94,7 +94,7 @@ void PolicyGraph::remove_node(const std::string &node_id) {
     throw std::invalid_argument("PolicyGraph::remove_node: node '" + node_id +
                                 "' does not exist");
   }
-  // Phase 3: clean tool_name index
+  // Clean tool_name index
   auto &removed_node = nodes_.at(node_id);
   if (!removed_node.tool_name.empty()) {
     tool_name_to_id_.erase(removed_node.tool_name);
@@ -535,7 +535,7 @@ PolicyGraph PolicyGraph::from_dot(const std::string &dot_str) {
 }
 
 // ============================================================================
-// Phase 3: StringPool Implementation
+// StringPool Implementation
 // ============================================================================
 
 const std::string &StringPool::intern(const std::string &s) {
@@ -544,7 +544,7 @@ const std::string &StringPool::intern(const std::string &s) {
 }
 
 // ============================================================================
-// Phase 3: Performance Features
+// Performance Features
 // ============================================================================
 
 void PolicyGraph::clear_caches() {

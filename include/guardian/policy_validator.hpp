@@ -44,7 +44,7 @@ public:
   // Configuration
   void set_cycle_threshold(uint32_t threshold);
 
-  // Cache profiling (Phase 3)
+  // Cache profiling
   double get_cache_hit_rate() const;
   size_t get_cache_hits() const { return cache_hits_.load(); }
   size_t get_cache_misses() const { return cache_misses_.load(); }
@@ -62,7 +62,7 @@ private:
   // LRU cache for validation results
   mutable LRUCache<std::string, ValidationResult> validation_cache_;
 
-  // Phase 3: Cache profiling counters
+  // Cache profiling counters
   mutable std::atomic<size_t> cache_hits_{0};
   mutable std::atomic<size_t> cache_misses_{0};
 

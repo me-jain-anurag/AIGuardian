@@ -1,5 +1,5 @@
 // src/policy_validator.cpp
-// Policy validation engine — Phase 3: LRU caching, optimized cycle/exfiltration
+// Policy validation engine with LRU caching and optimized cycle/exfiltration
 // detection
 #include "guardian/policy_validator.hpp"
 #include "guardian/policy_graph.hpp"
@@ -120,7 +120,7 @@ std::string PolicyValidator::generate_cache_key(const std::string& tool_name, co
 ValidationResult PolicyValidator::validate(const std::string& tool_name,
                                            const std::vector<ToolCall>& action_sequence) const {
 
-    // Phase 3: LRU cache lookup
+    // LRU cache lookup
     std::string cache_key = generate_cache_key(tool_name, action_sequence);
     auto cached = validation_cache_.get(cache_key);
     if (cached) {
@@ -131,7 +131,7 @@ ValidationResult PolicyValidator::validate(const std::string& tool_name,
 
     ValidationResult result;
 
-    // Phase 3: Fast tool_name to node_id lookup
+    // Fast tool_name to node_id lookup
     auto node_opt = graph_.get_node_by_tool_name(tool_name);
     if (!node_opt) {
         result.approved = false;

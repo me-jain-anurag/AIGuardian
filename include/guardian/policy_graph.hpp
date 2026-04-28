@@ -1,6 +1,6 @@
 // include/guardian/policy_graph.hpp
 // Policy graph engine with adjacency list representation
-// Phase 3: Performance optimizations (string interning, LRU cache, fast lookup)
+// Performance optimizations: string interning, LRU cache, fast lookup
 #pragma once
 
 #include "types.hpp"
@@ -34,7 +34,7 @@ struct PolicyEdge {
 };
 
 // ============================================================================
-// String Interning Pool (Phase 3 performance optimization)
+// String Interning Pool
 // ============================================================================
 // Reduces memory for repeated tool names / node IDs across large graphs
 class StringPool {
@@ -49,7 +49,7 @@ private:
 };
 
 // ============================================================================
-// LRU Cache for validation/lookup results (Phase 3)
+// LRU Cache for validation/lookup results
 // ============================================================================
 template <typename Key, typename Value>
 class LRUCache {
@@ -157,15 +157,15 @@ public:
     std::string to_dot() const;
     static PolicyGraph from_dot(const std::string& dot_str);
 
-    // Phase 3: Performance features
+    // Performance features
     StringPool& string_pool() { return string_pool_; }
     LRUCache<std::string, bool>& edge_cache() { return edge_cache_; }
     void clear_caches();
 
-    // Phase 3: Fast lookup — O(1) node-by-tool-name
+    // Fast lookup — O(1) node-by-tool-name
     std::optional<PolicyNode> get_node_by_tool_name(const std::string& tool_name) const;
 
-    // Phase 3: Graph analysis
+    // Graph analysis
     std::vector<std::string> find_path(const std::string& from_id,
                                         const std::string& to_id) const;
     bool is_reachable(const std::string& from_id, const std::string& to_id) const;
@@ -173,7 +173,7 @@ public:
 private:
     std::unordered_map<std::string, PolicyNode> nodes_;
     std::unordered_map<std::string, std::vector<PolicyEdge>> adjacency_list_;
-    // Phase 3: Performance internals
+    // Performance internals
     StringPool string_pool_;
     LRUCache<std::string, bool> edge_cache_{2000};
     std::unordered_map<std::string, std::string> tool_name_to_id_; // fast lookup index

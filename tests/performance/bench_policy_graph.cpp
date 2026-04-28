@@ -142,7 +142,7 @@ TEST_CASE("Benchmark: to_dot (50 nodes)", "[benchmark][serialization]") {
 }
 
 // ============================================================================
-// Phase 3: Performance Feature Benchmarks
+// Performance Feature Benchmarks
 // ============================================================================
 
 TEST_CASE("Benchmark: get_node_by_tool_name (200 nodes)", "[benchmark][perf]") {
